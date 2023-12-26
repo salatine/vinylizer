@@ -109,13 +109,13 @@ def is_national(suggestion: Optional[bool]) -> bool:
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
-        return get_pictures_binux()
-    return get_pictures_windows()
+       return get_pictures_binux()
+    return get_pictures_bindows()
 
 def get_pictures_binux() -> List[str]:
     return input('drag n\' drop: ').strip(' ').split(' ')
 
-def get_pictures_windows() -> List[str]:
+def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]
 
 def get_price() -> float:
