@@ -61,7 +61,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     
     n = min(len(vinyls), 5)
     for i in range(n):
-        print(f'{i}: {vinyls[i].title}')
+        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats}\n')
     print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
 
     choice = input('escolha um álbum [0]: ') or "0"
