@@ -12,10 +12,10 @@ class Product:
     genres: list[str]
     is_national: bool
     pictures: list[str]
-    song_quantity: int
-    album_duration: float
-    release_year: int
-    label: str
+    song_quantity: int | None
+    album_duration: float | None
+    release_year: int | None
+    label: str | None
     
     @cached_property
     def picture_urls(self):

@@ -35,51 +35,50 @@ def main():
             genres = get_genres(suggestion.genres),
             is_national = is_national(suggestion.is_national),
             pictures = get_pictures(),
-            # FIXME o que fazer quando não tiver a sugestão aqui?
-            song_quantity = suggestion.song_quantity,
-            album_duration = suggestion.album_duration,
-            release_year = suggestion.year,
-            label = suggestion.label,
+
+            # campos opcionais
+            song_quantity = suggestion.song_quantity or 1,
+            album_duration = suggestion.album_duration or 0,
+            release_year = suggestion.release_year or None,
+            label = suggestion.label or None,
         )
         products.append(product)
-
-        if input('deseja continuar? [s]: ').lower() == 'n':
+        if input('deseja continuar? (s/n) [s]: ').lower() == 'n':
             break
 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
-    vinyls = client.search(get_vinyl_code(), type='release')
+    code = get_vinyl_code()
+    vinyls = client.search(code, type='release')
     while len(vinyls) < 1:
         if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
             'caso contrário, iremos prosseguir sem as sugestões do discogs [s]\n').lower() == 'n':
             return ProductSuggestion.NULL_SUGGESTION
         
-        vinyls = client.search(get_vinyl_code(), type='release')
-
-    if len(vinyls) > 5:
-        vinyls = vinyls[:5]
-    for i in range(len(vinyls)):
+        vinyls = client.search(code, type='release')
+    
+    n = min(len(vinyls), 5)
+    for i in range(n):
         print(f'{i}: {vinyls[i].title}')
     print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
 
-    choice = input('escolha um álbum: ')
+    choice = input('escolha um álbum [0]: ') or "0"
     if choice.lower() == 'n':
         return ProductSuggestion.NULL_SUGGESTION
 
     vinyl_to_suggest = vinyls[int(choice)]
-
     return ProductSuggestion(
-       artist = vinyl.artists[0].name,
-       album = vinyl.title,
-       lps_quantity = vinyl.formats[0]['qty'],
-       genres = vinyl.genres,
-       is_national = is_national(vinyl_to_suggest),
-       song_quantity = len(vinyl.tracklist),
-       album_duration = get_album_duration(vinyl),
-       release_year = vinyl.year,
-       label = vinyl.labels[0].name,
+       artist = vinyl_to_suggest.artists[0].name,
+       album = vinyl_to_suggest.title,
+       lps_quantity = vinyl_to_suggest.formats[0]['qty'],
+       genres = vinyl_to_suggest.genres,
+       is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower(),
+       song_quantity = len(vinyl_to_suggest.tracklist),
+       album_duration = get_album_duration(vinyl_to_suggest),
+       release_year = vinyl_to_suggest.year,
+       label = vinyl_to_suggest.labels[0].name,
     )
 
 def get_token() -> str:
@@ -97,8 +96,16 @@ def get_artist_name(suggestion: Optional[str]) -> str:
 def get_vinyl_code() -> str:
     return input('vinyl code: ')
 
-def is_national(vinyl: discogs_client.Release) -> bool:
-    return 'brazil' in vinyl.artists[0].profile.lower()
+def tobool(value: str) -> bool:
+    if value.lower() == 's':
+        return True
+    elif value.lower() == 'n':
+        return False
+
+    raise ValueError('valor inválido!')
+
+def is_national(suggestion: Optional[bool]) -> bool:
+    return get_field_with_suggestion('nacional (s/n)', cast_function=tobool, suggestion=suggestion)
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
@@ -133,7 +140,8 @@ def get_genres(suggested_genres: List[str]) -> List[str]:
     
     # pode escolher os gêneros padrões e/ou digitar um novo, caso contrário pega o primeiro gênero padrão
     choices = input(f'\ngênero [{suggested_genres[0]}]: ') or "0"
-
+    
+    genres = []
     for choice in choices.split(','):
         choice = choice.strip(' ')
         if choice.isdigit():
@@ -153,6 +161,8 @@ def get_song_duration(song: discogs_client.Track) -> timedelta:
 def get_album_duration(vinyl: discogs_client.Release) -> float:
     total_duration = 0
     for song in vinyl.tracklist:
+        if not song.duration:
+            continue
         duration = get_song_duration(song)
         total_duration += duration.total_seconds() / 60
 
@@ -167,6 +177,7 @@ def get_field_with_suggestion(
     prompt_text = f'{field_description}'
     if suggestion is not None:
         prompt_text += f' [{suggestion}]'
+    prompt_text += ': '
 
     while True:
         input_value = input(prompt_text)
