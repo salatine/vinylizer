@@ -5,7 +5,7 @@ from typing import Callable, List, Optional, TypeVar
 from PySide6 import QtWidgets
 import platform
 from vinylizer.Product import Product
-from vinylizer.product_suggestion import ProductSuggestion
+from vinylizer.product_suggestion import ProductSuggestion, NULL_SUGGESTION
 from vinylizer.shopify_exporter import export_to_shopify_spreadsheet
 from vinylizer.ml_exporter import export_to_ml_spreadsheet
 from datetime import timedelta
@@ -54,8 +54,8 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     vinyls = client.search(code, type='release')
     while len(vinyls) < 1:
         if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
-            'caso contrário, iremos prosseguir sem as sugestões do discogs [s]\n').lower() == 'n':
-            return ProductSuggestion.NULL_SUGGESTION
+            'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
+            return NULL_SUGGESTION
         
         vinyls = client.search(code, type='release')
     
@@ -66,7 +66,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
 
     choice = input('escolha um álbum [0]: ') or "0"
     if choice.lower() == 'n':
-        return ProductSuggestion.NULL_SUGGESTION
+        return NULL_SUGGESTION
 
     vinyl_to_suggest = vinyls[int(choice)]
     return ProductSuggestion(
@@ -105,7 +105,7 @@ def tobool(value: str) -> bool:
     raise ValueError('valor inválido!')
 
 def is_national(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('nacional (s/n)', cast_function=tobool, suggestion=suggestion)
+    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion or True)
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
@@ -125,7 +125,7 @@ def get_gatefold_quantity() -> int:
     return get_field_with_suggestion('quantidade de encartes', cast_function=int, suggestion=0)
 
 def get_lps_quantity(suggestion: Optional[int]) -> int:
-    return get_field_with_suggestion('quantidade de discos', cast_function=int, suggestion=suggestion)
+    return get_field_with_suggestion('quantidade de discos', cast_function=int, suggestion=suggestion or 1)
 
 def get_ml_spreadsheet() -> str:
     return QtWidgets.QFileDialog.getOpenFileName(None, "Selecione a planilha do ML", CONFIG["spreadsheet_directory_path"], "ml spreadsheet (*.xlsx)")[0]
@@ -139,7 +139,10 @@ def get_genres(suggested_genres: List[str]) -> List[str]:
         print(f"\t{i}: {possible_genre}")
     
     # pode escolher os gêneros padrões e/ou digitar um novo, caso contrário pega o primeiro gênero padrão
-    choices = input(f'\ngênero [{suggested_genres[0]}]: ') or "0"
+    if len(suggested_genres) > 0:
+        choices = input(f'\ngênero [{suggested_genres[0]}]: ') or "0"
+    else:
+        choices = input(f'\ngênero: ')
     
     genres = []
     for choice in choices.split(','):

@@ -12,17 +12,6 @@ class ProductSuggestion:
     album_duration: Optional[float]
     release_year: Optional[int]
     label: Optional[str]
-    
-    @property
-    def NULL_SUGGESTION(self):
-        return self.__init__(
-            artist = None,
-            album = None,
-            lps_quantity = None,
-            genres = [],
-            is_national = None,
-            song_quantity = None,
-            album_duration = None,
-            release_year = None,
-            label = None,
-        )
+
+NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None)
+
