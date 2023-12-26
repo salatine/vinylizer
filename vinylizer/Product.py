@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from vinylizer.picture_handler import upload_pictures
+from typing import Optional
 
 @dataclass
 class Product:
@@ -12,10 +13,10 @@ class Product:
     genres: list[str]
     is_national: bool
     pictures: list[str]
-    song_quantity: int | None
-    album_duration: float | None
-    release_year: int | None
-    label: str | None
+    song_quantity: Optional[int]
+    album_duration: Optional[float]
+    release_year: Optional[int]
+    label: Optional[str]
     
     @cached_property
     def picture_urls(self):

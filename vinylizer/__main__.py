@@ -43,7 +43,7 @@ def main():
             label = suggestion.label or None,
         )
         products.append(product)
-        if input('deseja continuar? (s/n) [s]: ').lower() == 'n':
+        if input('deseja continuar? [S/n]: ').lower() == 'n':
             break
 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
