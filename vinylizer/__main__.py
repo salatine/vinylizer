@@ -105,7 +105,7 @@ def tobool(value: str) -> bool:
     raise ValueError('valor inválido!')
 
 def is_national(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion or True)
+    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or True)
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
