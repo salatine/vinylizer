@@ -1,10 +1,11 @@
 from pathlib import Path
 import discogs_client
 import tomli
-from typing import List
+from typing import Callable, List, Optional, TypeVar
 from PySide6 import QtWidgets
 import platform
 from vinylizer.Product import Product
+from vinylizer.product_suggestion import ProductSuggestion, NULL_SUGGESTION
 from vinylizer.shopify_exporter import export_to_shopify_spreadsheet
 from vinylizer.ml_exporter import export_to_ml_spreadsheet
 from datetime import timedelta
@@ -18,51 +19,67 @@ def main():
     products = []
 
     while True:
-        vinyl = get_vinyl(client)
-        if vinyl is None:
-            if input('nenhum vinil encontrado, deseja continuar? [s]: ').lower() == 'n':
+        suggestion = get_product_suggestion_with_discogs(client)
+        if suggestion is None:
+            if input('nenhuma sugestão encontrada, deseja continuar? [s]: ').lower() == 'n':
                 break
             else:
                 continue
 
         product = Product(
-            artist = get_artist_name(vinyl),
-            album = get_album_name(vinyl),
+            artist = get_artist_name(suggestion.artist),
+            album = get_album_name(suggestion.album),
             price = get_price(),
             gatefold_quantity = get_gatefold_quantity(),
-            lps_quantity = get_lps_quantity(vinyl),
-            genres = get_genres(vinyl),
-            is_national = is_national(vinyl),
+            lps_quantity = get_lps_quantity(suggestion.lps_quantity),
+            genres = get_genres(suggestion.genres),
+            is_national = is_national(suggestion.is_national),
             pictures = get_pictures(),
-            song_quantity = len(vinyl.tracklist), # pyright: ignore
-            album_duration = get_album_duration(vinyl), # pyright: ignore
-            release_year = vinyl.year,
-            label = vinyl.labels[0].name, # pyright: ignore
+
+            # campos opcionais
+            song_quantity = suggestion.song_quantity or 1,
+            album_duration = suggestion.album_duration or 0,
+            release_year = suggestion.release_year or None,
+            label = suggestion.label or None,
         )
         products.append(product)
-
-        if input('deseja continuar? [s]: ').lower() == 'n':
+        if input('deseja continuar? [S/n]: ').lower() == 'n':
             break
 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
 
-def get_vinyl(client: discogs_client.Client) -> discogs_client.Release | None:
-    vinyls = client.search(get_vinyl_code(), type='release')
+def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
+    code = get_vinyl_code()
+    vinyls = client.search(code, type='release')
     while len(vinyls) < 1:
-        print('nenhum álbum encontrado, digite novamente\n')
-        vinyls = client.search(get_vinyl_code(), type='release')
-
-    if len(vinyls) > 5:
-        vinyls = vinyls[:5]
-    for i in range(vinyls):
-        print(f'{i}: {vinyls[i].title}')
+        if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
+            'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
+            return NULL_SUGGESTION
+        
+        vinyls = client.search(code, type='release')
+    
+    n = min(len(vinyls), 5)
+    for i in range(n):
+        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats}\n')
     print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
 
-    choice = input('escolha um álbum: ')
+    choice = input('escolha um álbum [0]: ') or "0"
     if choice.lower() == 'n':
-        return None
-    return vinyls[int(choice)]
+        return NULL_SUGGESTION
+
+    vinyl_to_suggest = vinyls[int(choice)]
+    return ProductSuggestion(
+       artist = vinyl_to_suggest.artists[0].name,
+       album = vinyl_to_suggest.title,
+       lps_quantity = vinyl_to_suggest.formats[0]['qty'],
+       genres = vinyl_to_suggest.genres,
+       is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower(),
+       song_quantity = len(vinyl_to_suggest.tracklist),
+       album_duration = get_album_duration(vinyl_to_suggest),
+       release_year = vinyl_to_suggest.year,
+       label = vinyl_to_suggest.labels[0].name,
+    )
 
 def get_token() -> str:
     return CONFIG['token']
@@ -70,46 +87,45 @@ def get_token() -> str:
 def get_client(token: str) -> discogs_client.Client:
     return discogs_client.Client('vinylizer/0.1', user_token=token)
 
-def get_album_name(vinyl) -> str:
-    return input(f'nome do álbum [{vinyl.title}]: ') or vinyl.title
+def get_album_name(suggestion: Optional[str]) -> str:
+    return get_field_with_suggestion('nome do álbum', suggestion=suggestion)
 
-def get_artist_name(vinyl) -> str:
-    return input(f'nome do artista [{vinyl.artists[0].name}]: ') or vinyl.artists[0].name
+def get_artist_name(suggestion: Optional[str]) -> str:
+    return get_field_with_suggestion('nome do artista', suggestion=suggestion)
 
 def get_vinyl_code() -> str:
     return input('vinyl code: ')
 
-def is_national(vinyl: discogs_client.Release) -> bool:
-    return 'brazil' in vinyl.artists[0].profile.lower()
+def tobool(value: str) -> bool:
+    if value.lower() == 's':
+        return True
+    elif value.lower() == 'n':
+        return False
+
+    raise ValueError('valor inválido!')
+
+def is_national(suggestion: Optional[bool]) -> bool:
+    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or True)
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
-        return get_pictures_binux()
-    return get_pictures_windows()
+       return get_pictures_binux()
+    return get_pictures_bindows()
 
 def get_pictures_binux() -> List[str]:
     return input('drag n\' drop: ').strip(' ').split(' ')
 
-def get_pictures_windows() -> List[str]:
+def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]
 
 def get_price() -> float:
-    price = input('preço [30]: ') or "30"
-    return float(price)
+    return get_field_with_suggestion('preço', cast_function=float, suggestion=30)
 
 def get_gatefold_quantity() -> int:
-    quantity = input('quantidade de encartes [0]: ')
-    if not quantity:
-        return 0
-    return int(quantity)
+    return get_field_with_suggestion('quantidade de encartes', cast_function=int, suggestion=0)
 
-def get_lps_quantity(vinyl) -> int:
-    lps_quantity = vinyl.formats[0]['qty']
-    quantity = input(f'quantidade de discos [{lps_quantity}]: ')
-
-    if not quantity:
-        return lps_quantity
-    return int(quantity)
+def get_lps_quantity(suggestion: Optional[int]) -> int:
+    return get_field_with_suggestion('quantidade de discos', cast_function=int, suggestion=suggestion or 1)
 
 def get_ml_spreadsheet() -> str:
     return QtWidgets.QFileDialog.getOpenFileName(None, "Selecione a planilha do ML", CONFIG["spreadsheet_directory_path"], "ml spreadsheet (*.xlsx)")[0]
@@ -117,23 +133,25 @@ def get_ml_spreadsheet() -> str:
 def get_shopify_spreadsheet() -> str:
     return str(Path(CONFIG["spreadsheet_directory_path"]) / 'shopify.csv')
 
-def get_genres(vinyl: discogs_client.Release) -> List[str]:
-    genres = []
-    possible_genres: List[str] = vinyl.genres # pyright: ignore
+def get_genres(suggested_genres: List[str]) -> List[str]:
     print("selecione alguns dos gêneros encontrados e/ou digite novos, separando por vírgula: ")
-    for i, possible_genre in enumerate(possible_genres):
+    for i, possible_genre in enumerate(suggested_genres):
         print(f"\t{i}: {possible_genre}")
     
     # pode escolher os gêneros padrões e/ou digitar um novo, caso contrário pega o primeiro gênero padrão
-    choices = input(f'\ngênero [{possible_genres[0]}]: ') or "0"
-
+    if len(suggested_genres) > 0:
+        choices = input(f'\ngênero [{suggested_genres[0]}]: ') or "0"
+    else:
+        choices = input(f'\ngênero: ')
+    
+    genres = []
     for choice in choices.split(','):
         choice = choice.strip(' ')
         if choice.isdigit():
-            while int(choice) >= len(possible_genres):
-                print(f"número {choice} é inválido, selecione um número entre 0 e {len(possible_genres) - 1}")
+            while int(choice) >= len(suggested_genres):
+                print(f"número {choice} é inválido, selecione um número entre 0 e {len(suggested_genres) - 1}")
                 choice = input('\ngênero: ')
-            genres.append(possible_genres[int(choice)])
+            genres.append(suggested_genres[int(choice)])
         else:
             genres.append(choice)
 
@@ -146,10 +164,41 @@ def get_song_duration(song: discogs_client.Track) -> timedelta:
 def get_album_duration(vinyl: discogs_client.Release) -> float:
     total_duration = 0
     for song in vinyl.tracklist:
+        if not song.duration:
+            continue
         duration = get_song_duration(song)
         total_duration += duration.total_seconds() / 60
 
     return total_duration
+
+T = TypeVar('T')
+def get_field_with_suggestion(
+    field_description: str,
+    cast_function: Callable[[str], T] = str,
+    suggestion: Optional[T] = None
+) -> T:
+    prompt_text = f'{field_description}'
+    if suggestion is not None:
+        prompt_text += f' [{suggestion}]'
+    prompt_text += ': '
+
+    while True:
+        input_value = input(prompt_text)
+        if input_value == '':
+            if suggestion is not None:
+                return suggestion
+
+            print('valor é obrigatório, tente novamente!')
+            continue
+
+        # Tentaremos converter o valor digitado pro tipo que é desejado por quem chamou
+        # a função, e se falharmos o usuário irá ter que digitar de novo 
+        try:
+            return cast_function(input_value)
+        except:
+            print('valor inválido, tente novamente!')
+            continue
+
 if __name__ == "__main__":
     main()
 
