@@ -1,6 +1,6 @@
 import io
 import requests
-from PIL import Image
+from PIL import Image, ImageOps
 from typing import List
 
 def compress_picture(picture: str) -> io.BytesIO:
@@ -27,6 +27,7 @@ def upload_pictures(pictures: List[str]) -> List[str]:
 
 def remove_exif(picture: str) -> None:
     image = Image.open(picture)
+    image = ImageOps.exif_transpose(image)
     data = list(image.getdata())
     image_without_exif = Image.new(image.mode, image.size)
     image_without_exif.putdata(data)
