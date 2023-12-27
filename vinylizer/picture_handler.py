@@ -4,8 +4,9 @@ from PIL import Image
 from typing import List
 
 def compress_picture(picture: str) -> io.BytesIO:
+    remove_exif(picture)
     compressed_picture = io.BytesIO()
-    Image.open(picture).save(compressed_picture, optimize=True, quality=85, format='WEBP')
+    Image.open(picture).save(compressed_picture, optimize=True, quality=80, format='WEBP')
     compressed_picture.seek(0)
     return compressed_picture
 
@@ -24,3 +25,9 @@ def upload_pictures(pictures: List[str]) -> List[str]:
     return picture_links
     
 
+def remove_exif(picture: str) -> None:
+    image = Image.open(picture)
+    data = list(image.getdata())
+    image_without_exif = Image.new(image.mode, image.size)
+    image_without_exif.putdata(data)
+    image_without_exif.save(picture)
