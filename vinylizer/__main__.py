@@ -70,14 +70,17 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
 
     vinyl_to_suggest = vinyls[int(choice)]
     suggestion_artist = ""
+    suggestion_is_national = False
     if vinyl_to_suggest.artists is not None and len(vinyl_to_suggest.artists) > 0:
         suggestion_artist = vinyl_to_suggest.artists[0].name
+        suggestion_is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower()
+
     return ProductSuggestion(
        artist = suggestion_artist,
        album = vinyl_to_suggest.title,
        lps_quantity = vinyl_to_suggest.formats[0]['qty'],
        genres = vinyl_to_suggest.genres,
-       is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower(),
+       is_national = suggestion_is_national,
        song_quantity = len(vinyl_to_suggest.tracklist),
        album_duration = get_album_duration(vinyl_to_suggest),
        release_year = vinyl_to_suggest.year,
