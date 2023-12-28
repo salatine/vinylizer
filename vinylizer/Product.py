@@ -12,6 +12,7 @@ class Product:
     lps_quantity: int
     genres: list[str]
     is_national: bool
+    is_repeated: bool
     pictures: list[str]
     song_quantity: Optional[int]
     album_duration: Optional[float]
@@ -48,6 +49,9 @@ class Product:
     @property
     def title(self):
         title = f"Lp Vinil {self.artist} {self.album}"
+        if self.is_repeated:
+            title += f"{self.album} {self.artist}"
+
         if self.lps_quantity == 2:
             title += " Duplo"
         
@@ -55,5 +59,10 @@ class Product:
             title += " Com Encartes"
         elif self.gatefold_quantity == 1:
             title += " Com Encarte"
+        
+        if self.is_repeated:
+            title += " A"
 
+        # remove double spaces if any
+        title = " ".join(title.split())
         return title

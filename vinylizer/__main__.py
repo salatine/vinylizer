@@ -34,6 +34,7 @@ def main():
             lps_quantity = get_lps_quantity(suggestion.lps_quantity),
             genres = get_genres(suggestion.genres),
             is_national = is_national(suggestion.is_national),
+            is_repeated = is_repeated(suggestion.is_repeated),
             pictures = get_pictures(),
 
             # campos opcionais
@@ -50,18 +51,18 @@ def main():
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
-    code = get_vinyl_code()
-    vinyls = client.search(code, type='release')
+    vinyls = client.search(get_vinyl_code(), type='release')
     while len(vinyls) < 1:
         if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
             'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
             return NULL_SUGGESTION
         
-        vinyls = client.search(code, type='release')
+        vinyls = client.search(get_vinyl_code(), type='release')
     
     n = min(len(vinyls), 5)
     for i in range(n):
-        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats}\n')
+        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats[0]["descriptions"]}. ' + \
+              f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
     print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
 
     choice = input('escolha um álbum [0]: ') or "0"
@@ -83,6 +84,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        lps_quantity = vinyl_to_suggest.formats[0]['qty'],
        genres = vinyl_to_suggest.genres,
        is_national = suggestion_is_national,
+       is_repeated = False,
        song_quantity = len(vinyl_to_suggest.tracklist),
        album_duration = get_album_duration(vinyl_to_suggest),
        release_year = vinyl_to_suggest.year,
@@ -114,6 +116,9 @@ def tobool(value: str) -> bool:
 
 def is_national(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or True)
+
+def is_repeated(suggestion: Optional[bool]) -> bool:
+    return get_field_with_suggestion('repetido (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
 def get_pictures() -> List[str]:
     if platform.system() == 'Linux':
