@@ -50,7 +50,7 @@ class Product:
     def title(self):
         title = f"Lp Vinil {self.artist} {self.album}"
         if self.is_repeated:
-            title = f"Lp Vinil {self.album} {self.artist}"
+            title = f"Disco Vinil {self.album} {self.artist}"
 
         if self.lps_quantity == 2:
             title += " Duplo"
