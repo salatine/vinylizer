@@ -92,7 +92,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        is_repeated = False,
        song_quantity = len(vinyl_to_suggest.tracklist),
        album_duration = get_album_duration(vinyl_to_suggest),
-       release_year = vinyl_to_suggest.year,
+       release_year = vinyl_to_suggest.year if vinyl_to_suggest.year != "0" and vinyl_to_suggest else None,
        label = vinyl_to_suggest.labels[0].name,
     )
 
@@ -126,9 +126,16 @@ def is_repeated(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('repetido (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
 def get_pictures() -> List[str]:
+    products = []
     if platform.system() == 'Linux':
-       return get_pictures_binux()
-    return get_pictures_bindows()
+       products = get_pictures_binux()
+    else:
+        products = get_pictures_bindows()
+
+    # this is done because normally the main photo is the last one in the list
+    products = products[-1:] + products[:-1]
+
+    return products
 
 def get_pictures_binux() -> List[str]:
     return input('drag n\' drop: ').strip(' ').split(' ')

@@ -3,6 +3,7 @@ from vinylizer.Product import Product
 import csv
 import io
 from slugify import slugify
+from uuid import uuid4
 
 TAG_RELATIONS = {
     'all': 'LPs',
@@ -81,7 +82,9 @@ def export_to_shopify_spreadsheet(output_path: str, products: List[Product]) -> 
             print(f'Shopify | {i + 1}/{len(products)}: {product.title}')
 
 def get_product_handle(product: Product) -> str:
-    return slugify(product.title)
+    # generate random uuid for handle, avoiding possible shopify conflicts
+    uuid = str(uuid4())
+    return slugify(product.title + f' {uuid}')
 
 def get_product_tags(product: Product) -> List[str]:
     nationality = 'nacional' if product.is_national else 'internacional'
