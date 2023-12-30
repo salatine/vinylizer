@@ -67,7 +67,7 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
             'packaging': 'N/A',
             'songs': product.song_quantity,
             'nationality': product.nationality_text.title(),
-            'genre': product.genres[0],
+            'genre': product.genres[0].title(),
             'accessories': 'N/A',
             'pieces': 1,
             'album-duration': product.album_duration,
@@ -76,6 +76,8 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
 
         for field, column in columns_to_write.items():
             ws[f'{column}{start_row + i}'] = fields[field]
+
+        print(f'ML | {i + 1}/{len(products)}: {product.title}')
 
     wb.save(spreadsheet_path)
 

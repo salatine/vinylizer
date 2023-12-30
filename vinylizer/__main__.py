@@ -61,7 +61,12 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     
     n = min(len(vinyls), 5)
     for i in range(n):
-        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats[0]["descriptions"]}. ' + \
+        # may not have key description in formats
+        descriptions = ""
+        if 'descriptions' not in vinyls[i].formats[0]:
+            descriptions = vinyls[i].formats[0]['descriptions']
+
+        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {descriptions}. ' + \
               f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
     print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
 
