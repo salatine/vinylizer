@@ -47,8 +47,8 @@ def main():
         if input('deseja continuar? [S/n]: ').lower() == 'n':
             break
 
-    export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
+    export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
     vinyls = client.search(get_vinyl_code(), type='release')
@@ -74,7 +74,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     suggestion_is_national = False
 
     # se o artista for "Various", não terá nome nem nacionalidade, por não ter perfil no discogs
-    if vinyl_to_suggest.artists[0].name != "Various":
+    if vinyl_to_suggest.artists[0].name not in ["Various", "No Artist"]:
         suggestion_artist = vinyl_to_suggest.artists[0].name
         suggestion_is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower()
 
