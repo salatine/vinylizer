@@ -8,7 +8,9 @@ from vinylizer.Product import Product
 from vinylizer.product_suggestion import ProductSuggestion, NULL_SUGGESTION
 from vinylizer.shopify_exporter import export_to_shopify_spreadsheet
 from vinylizer.ml_exporter import export_to_ml_spreadsheet
-from datetime import timedelta
+from datetime import timedelta, datetime
+import openpyxl
+from vinylizer.emailer import send_email
 
 with open('./config.toml', 'rb') as file:
     CONFIG = tomli.load(file)
@@ -16,6 +18,26 @@ with open('./config.toml', 'rb') as file:
 def main():
     QtWidgets.QApplication([])
     client = get_client(get_token())
+    products = get_products(client)
+
+    export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
+    export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
+    create_resume_sheet(products)
+
+    data = datetime.now().strftime("%d/%m/%Y")
+    if input(f"\ndeseja enviar um e-mail com a relação para {CONFIG['receiver']}? [S/n]: ").lower() != 'n':
+        send_email(
+            subject=f"Relação {data}",
+            body=CONFIG['message'],
+            sender=CONFIG['sender'],
+            receiver=CONFIG['receiver'],
+            app_password=CONFIG['app_password'],
+            resume_attachment_path=get_resume_sheet_path(),
+        )
+
+        print('e-mail enviado com sucesso!')
+
+def get_products(client: discogs_client.Client) -> List[Product]:
     products = []
 
     while True:
@@ -50,8 +72,7 @@ def main():
         if input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
             break
 
-    export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
-    export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products) 
+    return products
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
     vinyls = client.search(get_vinyl_code(), type='release')
@@ -240,6 +261,28 @@ def display_product_information(product: Product):
     print(f'\tgênero(s): {product.genres}')
     print(f'\tnacional: {product.is_national}')
     print(f'\trepetido: {product.is_repeated}')
+
+def get_resume_sheet_path() -> str:
+    data = datetime.now().strftime("%d.%m.%Y")
+    return str(Path(CONFIG["resume_directory_path"]) / f'Relação {data}.xlsx')
+
+def create_resume_sheet(products: List[Product]):
+    resume_book = openpyxl.Workbook()
+
+    # get first sheet
+    resume_sheet = resume_book[resume_book.sheetnames[0]]
+
+    resume_sheet['A1'] = 'Título'
+    resume_sheet['B1'] = 'Preço'
+    resume_sheet['C1'] = 'Plataformas'
+
+    for i, product in enumerate(products):
+        resume_sheet[f'A{i + 2}'] = product.title
+        resume_sheet[f'B{i + 2}'] = str(product.price)
+        resume_sheet[f'C{i + 2}'] = 'ML, Shopify'
+    
+    resume_book_path = get_resume_sheet_path()
+    resume_book.save(resume_book_path)
 
 if __name__ == "__main__":
     main()
