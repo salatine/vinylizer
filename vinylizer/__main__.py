@@ -43,8 +43,11 @@ def main():
             release_year = suggestion.release_year or None,
             label = suggestion.label or None,
         )
-        products.append(product)
-        if input('deseja continuar? [S/n]: ').lower() == 'n':
+        print('\nproduto cadastrado: ')
+        display_product_information(product)
+        if input('\ndeseja realmente cadastrar esse produto? [S/n]: ').lower() != 'n':
+            products.append(product)
+        if input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
             break
 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
@@ -52,27 +55,35 @@ def main():
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
     vinyls = client.search(get_vinyl_code(), type='release')
-    while len(vinyls) < 1:
-        if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
-            'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
-            return NULL_SUGGESTION
+    choice = None
+    while True: 
+        while len(vinyls) < 1:
+            if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
+                'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
+                return NULL_SUGGESTION
+            
+            vinyls = client.search(get_vinyl_code(), type='release')
         
-        vinyls = client.search(get_vinyl_code(), type='release')
-    
-    n = min(len(vinyls), 5)
-    for i in range(n):
-        # may not have key description in formats
-        descriptions = ""
-        if 'descriptions' not in vinyls[i].formats[0]:
-            descriptions = vinyls[i].formats[0]['descriptions']
+        n = min(len(vinyls), 5)
+        for i in range(n):
+            # may not have key description in formats
+            descriptions = ""
+            if 'descriptions' not in vinyls[i].formats[0]:
+                descriptions = vinyls[i].formats[0]['descriptions']
 
-        print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {descriptions}. ' + \
-              f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
-    print('n: nenhum dos anteriores, não obter sugestões do discogs\n')
-
-    choice = input('escolha um álbum [0]: ') or "0"
-    if choice.lower() == 'n':
-        return NULL_SUGGESTION
+            print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {descriptions}. ' + \
+                  f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
+        print('n: nenhum dos anteriores, não obter sugestões do discogs')
+        print('r: pesquisar novamente\n')
+        choice = input('escolha um álbum [0]: ') or "0"
+        match(choice):
+            case 'n':
+                return NULL_SUGGESTION
+            case 'r':
+                vinyls = client.search(get_vinyl_code(), type='release')
+                continue
+            case _:
+                break
 
     vinyl_to_suggest = vinyls[int(choice)]
     suggestion_artist = ""
@@ -120,7 +131,7 @@ def tobool(value: str) -> bool:
     raise ValueError('valor inválido!')
 
 def is_national(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or True)
+    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
 def is_repeated(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('repetido (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
@@ -223,6 +234,16 @@ def get_field_with_suggestion(
         except:
             print('valor inválido, tente novamente!')
             continue
+
+def display_product_information(product: Product):
+    print(f'\tnome do artista: {product.artist}')
+    print(f'\tnome do álbum: {product.album}')
+    print(f'\tpreço: R${product.price}')
+    print(f'\tquantidade de encartes: {product.gatefold_quantity}')
+    print(f'\tquantidade de discos: {product.lps_quantity}')
+    print(f'\tgênero(s): {product.genres}')
+    print(f'\tnacional: {product.is_national}')
+    print(f'\trepetido: {product.is_repeated}')
 
 if __name__ == "__main__":
     main()
