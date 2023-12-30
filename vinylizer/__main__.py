@@ -57,14 +57,10 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     vinyls = client.search(get_vinyl_code(), type='release')
     choice = None
     while True: 
-        while len(vinyls) < 1:
-            if input('nenhum álbum encontrado, deseja tentar procurar novamente? ' + \
-                'caso contrário, iremos prosseguir sem as sugestões do discogs [s]: ').lower() == 'n':
-                return NULL_SUGGESTION
-            
-            vinyls = client.search(get_vinyl_code(), type='release')
-        
         n = min(len(vinyls), 5)
+        default = '0' if n > 0 else 'r'
+        if n < 1:
+            print("nenhum álbum com essa pesquisa foi encontrado")
         for i in range(n):
             # may not have key description in formats
             descriptions = ""
@@ -73,9 +69,9 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
 
             print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {descriptions}. ' + \
                   f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
-        print('n: nenhum dos anteriores, não obter sugestões do discogs')
+        print('\nn: nenhum dos anteriores, não obter sugestões do discogs')
         print('r: pesquisar novamente\n')
-        choice = input('escolha um álbum [0]: ') or "0"
+        choice = input(f'escolha uma das opções [{default}]: ') or default
         match(choice):
             case 'n':
                 return NULL_SUGGESTION
@@ -120,7 +116,7 @@ def get_artist_name(suggestion: Optional[str]) -> str:
     return get_field_with_suggestion('nome do artista', suggestion=suggestion)
 
 def get_vinyl_code() -> str:
-    return input('vinyl code: ')
+    return input('pesquisa do vinil: ')
 
 def tobool(value: str) -> bool:
     if value.lower() == 's':
