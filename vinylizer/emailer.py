@@ -10,7 +10,6 @@ def send_email(subject, body, sender, receiver, app_password, resume_attachment_
     msg['From'] = sender 
     msg['To'] = receiver
     msg['Subject'] = subject
-    body = body
     msg.attach(MIMEText(body, 'plain')) 
     p = MIMEBase('application', 'octet-stream')
     p.set_payload(open(resume_attachment_path, 'rb').read())
