@@ -20,8 +20,7 @@ def main():
     QtWidgets.QApplication([])
     client = get_client(get_token())
 
-    json_products = get_json_products()
-    products = json_products + get_products(client)
+    products = get_products(client, get_json_products())
 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
@@ -76,8 +75,8 @@ def load_json_products() -> List[Product]:
 
     return products
 
-def get_products(client: discogs_client.Client) -> List[Product]:
-    products = []
+def get_products(client: discogs_client.Client, json_products: List[Product]) -> List[Product]:
+    products = json_products
     
     while True:
         suggestion = get_product_suggestion_with_discogs(client)
