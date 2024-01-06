@@ -11,6 +11,7 @@ from vinylizer.ml_exporter import export_to_ml_spreadsheet
 from datetime import timedelta, datetime
 import openpyxl
 from vinylizer.emailer import send_email
+import json
 
 with open('./config.toml', 'rb') as file:
     CONFIG = tomli.load(file)
@@ -18,10 +19,16 @@ with open('./config.toml', 'rb') as file:
 def main():
     QtWidgets.QApplication([])
     client = get_client(get_token())
-    products = get_products(client)
+
+    json_products = get_json_products()
+    products = json_products + get_products(client)
 
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
+
+    # backup não é mais necessário uma vez que é concluído o processo de exportação
+    delete_json_products()
+
     create_resume_sheet(products)
 
     data = datetime.now().strftime("%d/%m/%Y")
@@ -37,9 +44,41 @@ def main():
 
         print('e-mail enviado com sucesso!')
 
+def get_json_products() -> List[Product]:    
+    json_products = []
+    if Path('./products.json').exists() and input('foi detectado um backup dos produtos, deseja carregá-lo? [S/n]: ').lower() != 'n':
+        json_products = load_json_products()
+        print(f'{len(json_products)} produtos carregados do arquivo de backup')
+
+    return json_products
+
+def load_json_products() -> List[Product]:
+    products = []
+    with open('./products.json', 'r') as file:
+        json_products = json.load(file)
+        for json_product in json_products:
+            product = Product(
+                artist = json_product['artist'],
+                album = json_product['album'],
+                price = json_product['price'],
+                gatefold_quantity = json_product['gatefold_quantity'],
+                lps_quantity = json_product['lps_quantity'],
+                genres = json_product['genres'],
+                is_national = json_product['is_national'],
+                is_repeated = json_product['is_repeated'],
+                pictures = json_product['pictures'],
+                song_quantity = json_product['song_quantity'],
+                album_duration = json_product['album_duration'],
+                release_year = json_product['release_year'],
+                label = json_product['label'],
+            )
+            products.append(product)
+
+    return products
+
 def get_products(client: discogs_client.Client) -> List[Product]:
     products = []
-
+    
     while True:
         suggestion = get_product_suggestion_with_discogs(client)
         if suggestion is None:
@@ -67,12 +106,89 @@ def get_products(client: discogs_client.Client) -> List[Product]:
         )
         print('\nproduto cadastrado: ')
         display_product_information(product)
-        if input('\ndeseja realmente cadastrar esse produto? [S/n]: ').lower() != 'n':
-            products.append(product)
+        
+        if input('\ndeseja alterar algum valor? [s/N]: ').lower() == 's':
+            product = change_product_values(product, suggestion)
+
+        products.append(product)
+
+        # atualiza arquivo products.json a cada produto cadastrado, a fim de não perder os dados
+        save_json_products(products)
+
         if input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
             break
-
+    
     return products
+
+def save_json_products(products: List[Product]):
+    with open('./products.json', 'w') as file:
+        json_products = []
+        for product in products:
+            json_product = {
+                'artist': product.artist,
+                'album': product.album,
+                'price': product.price,
+                'gatefold_quantity': product.gatefold_quantity,
+                'lps_quantity': product.lps_quantity,
+                'genres': product.genres,
+                'is_national': product.is_national,
+                'is_repeated': product.is_repeated,
+                'pictures': product.pictures,
+                'song_quantity': product.song_quantity,
+                'album_duration': product.album_duration,
+                'release_year': product.release_year,
+                'label': product.label,
+            }
+            json_products.append(json_product)
+
+        json.dump(json_products, file)
+        
+def delete_json_products():
+    Path('./products.json').unlink()
+
+def change_product_values(product: Product, suggestion: ProductSuggestion):
+    while True:
+        print('\nqual valor deseja alterar?')
+        print('\tq: sair')
+        print('\t0: nome do artista')
+        print('\t1: nome do álbum')
+        print('\t2: preço')
+        print('\t3: quantidade de encartes')
+        print('\t4: quantidade de discos')
+        print('\t5: gênero(s)')
+        print('\t6: nacional')
+        print('\t7: repetido')
+        choice = input('\nqual valor deseja alterar? [0]: ') or '0'
+        match(choice):
+            case 'q':
+                break
+            case '0':
+                product.artist = get_artist_name(suggestion.artist)
+            case '1':
+                product.album = get_album_name(suggestion.album)
+            case '2':
+                product.price = get_price()
+            case '3':
+                product.gatefold_quantity = get_gatefold_quantity()
+            case '4':
+                product.lps_quantity = get_lps_quantity(suggestion.lps_quantity)
+            case '5':
+                product.genres = get_genres(suggestion.genres)
+            case '6':
+                product.is_national = is_national(suggestion.is_national)
+            case '7':
+                product.is_repeated = is_repeated(suggestion.is_repeated)
+            case _:
+                print('valor inválido, tente novamente!')
+                continue
+
+        print('\nproduto cadastrado: ')
+        display_product_information(product)
+
+        if input('\ndeseja alterar mais algum valor? [S/n]: ').lower() == 'n':
+            break
+
+    return product
 
 def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
     vinyls = client.search(get_vinyl_code(), type='release')
@@ -83,12 +199,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
         if n < 1:
             print("nenhum álbum com essa pesquisa foi encontrado")
         for i in range(n):
-            # may not have key description in formats
-            descriptions = ""
-            if 'descriptions' not in vinyls[i].formats[0]:
-                descriptions = vinyls[i].formats[0]['descriptions']
-
-            print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {descriptions}. ' + \
+            print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats[0]}. ' + \
                   f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
         print('\nn: nenhum dos anteriores, não obter sugestões do discogs')
         print('r: pesquisar novamente\n')
