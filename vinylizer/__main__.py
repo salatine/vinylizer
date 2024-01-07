@@ -31,12 +31,12 @@ def main():
     create_resume_sheet(products)
 
     data = datetime.now().strftime("%d/%m/%Y")
-    if input(f"\ndeseja enviar um e-mail com a relação para {CONFIG['receiver']}? [S/n]: ").lower() != 'n':
+    if input(f"\ndeseja enviar um e-mail com a relação para {CONFIG['receivers']}? [S/n]: ").lower() != 'n':
         send_email(
             subject=f"Relação {data}",
             body=CONFIG['message'],
             sender=CONFIG['sender'],
-            receiver=CONFIG['receiver'],
+            receivers=CONFIG['receivers'],
             app_password=CONFIG['app_password'],
             resume_attachment_path=get_resume_sheet_path(),
         )

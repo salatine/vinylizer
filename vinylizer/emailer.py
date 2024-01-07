@@ -5,10 +5,11 @@ from email.mime.base import MIMEBase
 from email import encoders
 from os.path import basename
 
-def send_email(subject, body, sender, receiver, app_password, resume_attachment_path):
+def send_email(subject, body, sender, receivers, app_password, resume_attachment_path):
     msg = MIMEMultipart() 
     msg['From'] = sender 
-    msg['To'] = receiver
+    msg['To'] = receivers[0]
+    msg['CC'] = ', '.join(receivers[1:])
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain')) 
     p = MIMEBase('application', 'octet-stream')
@@ -20,5 +21,5 @@ def send_email(subject, body, sender, receiver, app_password, resume_attachment_
     s.starttls() 
     s.login(sender, app_password)
     text = msg.as_string() 
-    s.sendmail(sender, receiver, text) 
+    s.sendmail(sender, receivers, text) 
     s.quit() 
