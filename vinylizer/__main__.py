@@ -80,6 +80,8 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
     
     while True:
         suggestion = get_product_suggestion_with_discogs(client)
+        if suggestion == None:
+            break
         if suggestion is None:
             if input('nenhuma sugestão encontrada, deseja continuar? [s]: ').lower() == 'n':
                 break
@@ -189,7 +191,7 @@ def change_product_values(product: Product, suggestion: ProductSuggestion):
 
     return product
 
-def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion:
+def get_product_suggestion_with_discogs(client: discogs_client.Client) -> ProductSuggestion | None:
     vinyls = client.search(get_vinyl_code(), type='release')
     choice = None
     while True: 
@@ -201,7 +203,8 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
             print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats[0]}. ' + \
                   f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
         print('\nn: nenhum dos anteriores, não obter sugestões do discogs')
-        print('r: pesquisar novamente\n')
+        print('r: pesquisar novamente')
+        print('q: sair\n')
         choice = input(f'escolha uma das opções [{default}]: ') or default
         match(choice):
             case 'n':
@@ -209,6 +212,8 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
             case 'r':
                 vinyls = client.search(get_vinyl_code(), type='release')
                 continue
+            case 'q':
+                return None
             case _:
                 break
 
