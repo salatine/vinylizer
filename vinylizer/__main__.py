@@ -19,9 +19,10 @@ with open('./config.toml', 'rb') as file:
 def main():
     QtWidgets.QApplication([])
     client = get_client(get_token())
+    
+    json_products = get_json_products()
 
-    products = get_products(client, get_json_products())
-
+    products = get_products(client, json_products)
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
 
@@ -77,7 +78,9 @@ def load_json_products() -> List[Product]:
 
 def get_products(client: discogs_client.Client, json_products: List[Product]) -> List[Product]:
     products = json_products
-    
+    if len(products) > 1 and input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
+        return products
+
     while True:
         suggestion = get_product_suggestion_with_discogs(client)
         if suggestion == None:

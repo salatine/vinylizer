@@ -7,6 +7,7 @@ import openpyxl
 
 HEADER_ROW = 3
 FIELDS_BY_CELL_VALUE = {
+    'Forma de anunciar': 'listing-type',
     'Título': 'title',
     'Código universal': 'code',
     'Fotos': 'picture_urls',
@@ -42,6 +43,7 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
 
     for i, product in enumerate(products):
         fields = {
+            'listing-type': 'Lista geral',
             'title': product.title,
             'code': 'O produto não tem código cadastrado',
             'picture_urls': ', '.join(product.picture_urls),
@@ -58,7 +60,7 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
             'pickup': 'Não aceito',
             'warranty': 'Sem garantia',
             'artist': product.artist if product.artist else product.album,
-            'album': product.album,
+            'album': product.album if product.album.strip() != '' else product.artist,
             'label': product.label or 'N/A',
             'album-type': 'Vinil',
             'format': 'Físico',
@@ -83,8 +85,8 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
 
 def get_start_row(ws: worksheet.Worksheet) -> int:
     for i in range(HEADER_ROW, ws.max_row):
-        cell = ws.cell(row=i, column=1)
-        if 'Selecionar' in str(cell.value):
+        cell = ws.cell(row=i, column=4)
+        if 'Novo' in str(cell.value):
             return cell.row
     raise Exception('Não foi possível encontrar a linha de início')
 
