@@ -18,6 +18,7 @@ class Product:
     album_duration: Optional[float]
     release_year: Optional[int]
     label: Optional[str]
+    observation: Optional[str]
     
     @cached_property
     def picture_urls(self):
@@ -27,6 +28,7 @@ class Product:
     def description(self):
         gatefold_description = ""
         lps_description = ""
+        observation_description = self.observation if self.observation else ""
 
         if self.gatefold_quantity >= 2:
             gatefold_description = f"COM ENCARTES."
@@ -36,7 +38,7 @@ class Product:
         if self.lps_quantity == 2:
             lps_description = f"DISCO DUPLO."
 
-        return f"PRODUTO USADO EM BOM ESTADO.\n{gatefold_description} {lps_description}\n"
+        return f"PRODUTO USADO EM BOM ESTADO.\n{gatefold_description} {lps_description}\n{observation_description}"
 
     @property
     def nationality_text(self):
@@ -62,6 +64,9 @@ class Product:
         
         if self.is_repeated:
             title += " A"
+
+        if self.observation:
+            title += f", Leia"
 
         # remove double spaces if any
         title = " ".join(title.split())

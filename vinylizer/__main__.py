@@ -71,6 +71,7 @@ def load_json_products() -> List[Product]:
                 album_duration = json_product['album_duration'],
                 release_year = json_product['release_year'],
                 label = json_product['label'],
+                observation = json_product['observation'],
             )
             products.append(product)
 
@@ -98,6 +99,7 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
             gatefold_quantity = get_gatefold_quantity(),
             lps_quantity = get_lps_quantity(suggestion.lps_quantity),
             genres = get_genres(suggestion.genres),
+            observation = get_observation(),
             is_national = is_national(suggestion.is_national),
             is_repeated = is_repeated(suggestion.is_repeated),
             pictures = get_pictures(),
@@ -142,6 +144,7 @@ def save_json_products(products: List[Product]):
                 'album_duration': product.album_duration,
                 'release_year': product.release_year,
                 'label': product.label,
+                'observation': product.observation,
             }
             json_products.append(json_product)
 
@@ -240,6 +243,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        album_duration = get_album_duration(vinyl_to_suggest),
        release_year = vinyl_to_suggest.year if vinyl_to_suggest.year != "0" and vinyl_to_suggest else None,
        label = vinyl_to_suggest.labels[0].name,
+       observation = None,
     )
 
 def get_token() -> str:
@@ -288,6 +292,9 @@ def get_pictures_binux() -> List[str]:
 
 def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]
+
+def get_observation() -> str:
+    return get_field_with_suggestion('observação', cast_function=str, suggestion='')
 
 def get_price() -> float:
     return get_field_with_suggestion('preço', cast_function=float, suggestion=30)

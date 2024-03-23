@@ -13,6 +13,7 @@ class ProductSuggestion:
     album_duration: Optional[float]
     release_year: Optional[int]
     label: Optional[str]
+    observation: Optional[str]
 
-NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None, None)
+NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None, None, None)
 
