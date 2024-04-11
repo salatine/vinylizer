@@ -66,6 +66,7 @@ def load_json_products() -> List[Product]:
                 genres = json_product['genres'],
                 is_national = json_product['is_national'],
                 is_repeated = json_product['is_repeated'],
+                is_double_covered = json_product['is_double_covered'],
                 pictures = json_product['pictures'],
                 song_quantity = json_product['song_quantity'],
                 album_duration = json_product['album_duration'],
@@ -103,7 +104,7 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
             is_national = is_national(suggestion.is_national),
             is_repeated = is_repeated(suggestion.is_repeated),
             pictures = get_pictures(),
-
+            is_double_covered = get_is_double_covered(suggestion.is_double_covered),
             # campos opcionais
             song_quantity = suggestion.song_quantity or 1,
             album_duration = suggestion.album_duration or 0,
@@ -139,6 +140,7 @@ def save_json_products(products: List[Product]):
                 'genres': product.genres,
                 'is_national': product.is_national,
                 'is_repeated': product.is_repeated,
+                'is_double_covered': product.is_double_covered,
                 'pictures': product.pictures,
                 'song_quantity': product.song_quantity,
                 'album_duration': product.album_duration,
@@ -239,6 +241,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        genres = vinyl_to_suggest.genres,
        is_national = suggestion_is_national,
        is_repeated = False,
+       is_double_covered = False,
        song_quantity = len(vinyl_to_suggest.tracklist),
        album_duration = get_album_duration(vinyl_to_suggest),
        release_year = vinyl_to_suggest.year if vinyl_to_suggest.year != "0" and vinyl_to_suggest else None,
@@ -257,6 +260,9 @@ def get_album_name(suggestion: Optional[str]) -> str:
 
 def get_artist_name(suggestion: Optional[str]) -> str:
     return get_field_with_suggestion('nome do artista', suggestion=suggestion)
+
+def get_is_double_covered(suggestion: Optional[bool]) -> bool:
+    return get_field_with_suggestion('capa dupla (S/n)', cast_function=tobool, suggestion=suggestion)
 
 def get_vinyl_code() -> str:
     return input('pesquisa do vinil: ')

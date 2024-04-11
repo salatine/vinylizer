@@ -13,6 +13,7 @@ class Product:
     genres: list[str]
     is_national: bool
     is_repeated: bool
+    is_double_covered: bool
     pictures: list[str]
     song_quantity: Optional[int]
     album_duration: Optional[float]
@@ -36,7 +37,10 @@ class Product:
             gatefold_description = "COM ENCARTE."
 
         if self.lps_quantity == 2:
-            lps_description = f"DISCO DUPLO."
+            lps_description = f"DISCO DUPLO. "
+
+        if self.is_double_covered:
+            lps_description += "CAPA DUPLA."
 
         return f"PRODUTO USADO EM BOM ESTADO.\n{gatefold_description} {lps_description}\n{observation_description}"
 
@@ -53,9 +57,13 @@ class Product:
         title = f"Lp Vinil {self.artist} {self.album}"
         if self.is_repeated:
             title = f"Disco Vinil {self.album} {self.artist}"
-
+        double = ""
+        if self.is_double_covered:
+            double = "Capa Dupla"
         if self.lps_quantity == 2:
-            title += " Duplo"
+            double = "Duplo"
+
+        title += f" {double}"
         
         if self.gatefold_quantity >= 2:
             title += " Com Encartes"
