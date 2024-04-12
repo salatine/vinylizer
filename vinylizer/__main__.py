@@ -103,8 +103,8 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
             observation = get_observation(),
             is_national = is_national(suggestion.is_national),
             is_repeated = is_repeated(suggestion.is_repeated),
-            pictures = get_pictures(),
             is_double_covered = get_is_double_covered(suggestion.is_double_covered),
+            pictures = get_pictures(),
             # campos opcionais
             song_quantity = suggestion.song_quantity or 1,
             album_duration = suggestion.album_duration or 0,
