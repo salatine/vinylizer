@@ -230,7 +230,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     suggestion_is_national = False
 
     # se o artista for "Various", não terá nome nem nacionalidade, por não ter perfil no discogs
-    if vinyl_to_suggest.artists[0].name not in ["Various", "No Artist"]:
+    if vinyl_to_suggest.artists[0].name not in ["Various", "No Artist", "Unknown Artist" ]: 
         suggestion_artist = vinyl_to_suggest.artists[0].name
         suggestion_is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower()
 
