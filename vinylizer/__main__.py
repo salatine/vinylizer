@@ -9,9 +9,9 @@ from vinylizer.product_suggestion import ProductSuggestion, NULL_SUGGESTION
 from vinylizer.shopify_exporter import export_to_shopify_spreadsheet
 from vinylizer.ml_exporter import export_to_ml_spreadsheet
 from datetime import timedelta, datetime
-import openpyxl
 from vinylizer.emailer import send_email
 import json
+from vinylizer.resume_sheet import create_resume_sheet
 
 with open('./config.toml', 'rb') as file:
     CONFIG = tomli.load(file)
@@ -29,7 +29,7 @@ def main():
     # backup não é mais necessário uma vez que é concluído o processo de exportação
     delete_json_products()
 
-    create_resume_sheet(products)
+    create_resume_sheet(products, get_resume_sheet_path())
 
     data = datetime.now().strftime("%d/%m/%Y")
     if input(f"\ndeseja enviar um e-mail com a relação para {CONFIG['receivers']}? [S/n]: ").lower() != 'n':
@@ -397,23 +397,6 @@ def get_resume_sheet_path() -> str:
     data = datetime.now().strftime("%d.%m.%Y")
     return str(Path(CONFIG["resume_directory_path"]) / f'Relação {data}.xlsx')
 
-def create_resume_sheet(products: List[Product]):
-    resume_book = openpyxl.Workbook()
-
-    # get first sheet
-    resume_sheet = resume_book[resume_book.sheetnames[0]]
-
-    resume_sheet['A1'] = 'Título'
-    resume_sheet['B1'] = 'Preço'
-    resume_sheet['C1'] = 'Plataformas'
-
-    for i, product in enumerate(products):
-        resume_sheet[f'A{i + 2}'] = product.title
-        resume_sheet[f'B{i + 2}'] = str(product.price)
-        resume_sheet[f'C{i + 2}'] = 'ML, Shopify'
-    
-    resume_book_path = get_resume_sheet_path()
-    resume_book.save(resume_book_path)
 
 if __name__ == "__main__":
     main()
