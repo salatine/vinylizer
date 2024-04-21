@@ -22,6 +22,7 @@ def create_resume_sheet(products: List[Product], resume_book_path):
     sides_black_border = styles.Border(left=black, right=black)
     top_black_border = styles.Border(left=black, right=black, top=black)
     bottom_black_border = styles.Border(left=black, right=black, bottom=black)
+    all_black_border = styles.Border(left=black, right=black, top=black, bottom=black)
     center = styles.Alignment(horizontal='center')
 
     for i, product in enumerate(products):
@@ -37,13 +38,16 @@ def create_resume_sheet(products: List[Product], resume_book_path):
                 resume_sheet[f'{letter}{i + 2}'].border = top_black_border
             if i == len(products) - 1:
                 resume_sheet[f'{letter}{i + 2}'].border = bottom_black_border
-                resume_sheet[f'{letter}1'].border = top_black_border
+                resume_sheet[f'{letter}1'].border = all_black_border
                 resume_sheet[f'{letter}1'].alignment = center
-                resume_sheet[f'{letter}{len(products) + 2}'].border = bottom_black_border
+                resume_sheet[f'{letter}1'].font = styles.Font(name='Calibri', bold=True)
+                resume_sheet[f'{letter}{len(products) + 2}'].border = all_black_border
                 resume_sheet[f'{letter}{len(products) + 2}'].alignment = center
+                resume_sheet[f'{letter}{len(products) + 2}'].font = styles.Font(name='Calibri', bold=True)
 
     resume_sheet[f'A{len(products) + 2}'] = len(products) # type: ignore
     resume_sheet[f'B{len(products) + 2}'] = f'=SUM(B2:B{len(products) + 1})'
+    resume_sheet[f'B{len(products) + 2}'].number_format = '0.00'
     resume_sheet[f'C{len(products) + 2}'] = 'ML, Shopify'
 
     columns_best_fit(resume_sheet)
