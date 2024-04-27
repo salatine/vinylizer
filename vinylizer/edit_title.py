@@ -21,7 +21,7 @@ def edit_title(message: str):
         ws.geometry('600x100')
         ws.config(bg='#fcbc99')
         ws.title('Editar título')
-        ws.attributes('-fullscreen', True)
+        ws.wm_attributes('-zoomed', 1)
         return ws
 
     def create_text_length(ws):
@@ -68,7 +68,7 @@ def edit_title(message: str):
         )
         warning.pack(expand=True)
         warning.insert('end', 'O título não pode ter mais de 60 caracteres. Por favor, modifique o texto.')
-        ws.after(3000, warning.destroy)
+        ws.after(10000, warning.destroy)
         return warning
 
     ws = create_main_window()
