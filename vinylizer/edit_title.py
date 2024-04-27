@@ -12,14 +12,15 @@ def edit_title(message: str):
         text_length.delete('1.0', 'end')
         text_length.insert('end', f'{str(len(text_box.get("1.0", "end-1c")))}/60')
         if len(text_box.get("1.0", "end-1c")) > 60:
-            text_length.config(bg='red')
-        else:
             text_length.config(bg='white')
+        else:
+            text_length.config(bg='green')
 
     def create_main_window():
         ws = Tk()
         ws.geometry('600x100')
-        ws.config(bg='#fcabe8')
+        ws.config(bg='#fcbc99')
+        ws.title('Editar título')
         return ws
 
     def create_text_length(ws):
@@ -60,8 +61,8 @@ def edit_title(message: str):
             ws,
             height=2,
             width=50,
-            bg='red',
-            fg='white',
+            bg='white',
+            fg='black',
             wrap='word'
         )
         warning.pack(expand=True)
