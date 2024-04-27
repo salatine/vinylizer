@@ -21,6 +21,7 @@ def edit_title(message: str):
         ws.geometry('600x100')
         ws.config(bg='#fcbc99')
         ws.title('Editar título')
+        ws.attributes('-fullscreen', True)
         return ws
 
     def create_text_length(ws):
