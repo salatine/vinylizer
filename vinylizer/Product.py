@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from vinylizer.picture_handler import upload_pictures
 from typing import Optional
+from vinylizer.edit_title import edit_title
 
 @dataclass
 class Product:
@@ -52,7 +53,7 @@ class Product:
         
         return nationalityText.title()
 
-    @property
+    @cached_property
     def title(self):
         title = f"Lp Vinil {self.artist} {self.album}"
         if self.is_repeated:
@@ -78,4 +79,8 @@ class Product:
 
         # remove double spaces if any
         title = " ".join(title.split())
+
+        if len(title) > 60:
+            title = edit_title(title)
+
         return title

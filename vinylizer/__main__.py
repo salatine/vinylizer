@@ -80,7 +80,7 @@ def load_json_products() -> List[Product]:
 
 def get_products(client: discogs_client.Client, json_products: List[Product]) -> List[Product]:
     products = json_products
-    if len(products) > 1 and input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
+    if len(products) > 0 and input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
         return products
 
     while True:
