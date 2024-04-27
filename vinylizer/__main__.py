@@ -237,7 +237,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
     return ProductSuggestion(
        artist = suggestion_artist,
        album = vinyl_to_suggest.title,
-       lps_quantity = vinyl_to_suggest.formats[0]['qty'],
+       lps_quantity = int(vinyl_to_suggest.formats[0]['qty']),
        genres = vinyl_to_suggest.genres,
        is_national = suggestion_is_national,
        is_repeated = False,
