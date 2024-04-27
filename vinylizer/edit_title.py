@@ -1,4 +1,5 @@
 from tkinter import Button, StringVar, Tk, Text
+import os
 
 def edit_title(message: str):
     def check_input():
@@ -21,7 +22,10 @@ def edit_title(message: str):
         ws.geometry('600x100')
         ws.config(bg='#fcbc99')
         ws.title('Editar título')
-        ws.wm_attributes('-zoomed', 1)
+        if os.name == 'nt':
+            ws.state('zoomed')
+        elif os.name == 'posix':
+            ws.attributes('-zoomed', True)
         return ws
 
     def create_text_length(ws):
