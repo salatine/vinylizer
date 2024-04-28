@@ -18,7 +18,7 @@ FIELDS_BY_CELL_VALUE = {
     'Tipo de anúncio': 'type',
     'Forma de envio': 'shipping-mode',
     'Retirar pessoalmente': 'pickup',
-    'Garantia': 'warranty',
+    'Tipo de garantia': 'warranty',
     'Nome do artista': 'artist',
     'Nome do álbum': 'album',
     'Companhia': 'label',
