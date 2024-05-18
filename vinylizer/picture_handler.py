@@ -17,7 +17,7 @@ def upload_pictures(pictures: List[str]) -> List[str]:
         response = requests.post(
             'https://litterbox.catbox.moe/resources/internals/api.php', 
             files={'fileToUpload': ('photo.webp', compressed_picture, 'image/webp')}, 
-            data={'reqtype': 'fileupload', 'time': '1h'},
+            data={'reqtype': 'fileupload', 'time': '12h'},
         )
         response.raise_for_status()
         picture_links.append(response.text)
