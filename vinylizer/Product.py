@@ -55,9 +55,12 @@ class Product:
 
     @cached_property
     def title(self):
-        title = f"Lp Vinil {self.artist} {self.album}"
+        album = self.album
+        if album == self.artist:
+            album = self.release_year or None
+        title = f"Lp Vinil {self.artist} {album}"
         if self.is_repeated:
-            title = f"Disco Vinil {self.album} {self.artist}"
+            title = f"Disco Vinil {album} {self.artist}"
         double = ""
         if self.is_double_covered:
             double = "Capa Dupla"
