@@ -60,7 +60,7 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
             'pickup': 'Não aceito',
             'warranty': 'Sem garantia',
             'artist': product.artist if product.artist else product.album,
-            'album': product.album if product.album.strip() != '' else product.artist,
+            'album': product.album if product.album.strip() != '' and product.album is not None else product.artist,
             'label': product.label or 'N/A',
             'album-type': 'Vinil',
             'format': 'Físico',
