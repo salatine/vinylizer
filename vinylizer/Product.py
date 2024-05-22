@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from functools import cached_property
-from vinylizer.picture_handler import upload_pictures
+from vinylizer.picture_handler import upload_picture
 from typing import Optional
 from vinylizer.edit_title import edit_title
+import requests
 
 @dataclass
 class Product:
@@ -24,7 +25,16 @@ class Product:
     
     @cached_property
     def picture_urls(self):
-        return upload_pictures(self.pictures)
+        uploaded_pictures = []
+        for picture in self.pictures:
+            status = 0
+            uploaded_picture = upload_picture(picture)
+            while status != 200:
+                response = requests.get(uploaded_picture)
+                status = response.status_code
+            uploaded_pictures.append(uploaded_picture)
+
+        return uploaded_pictures
 
     @property
     def description(self):
