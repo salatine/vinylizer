@@ -13,13 +13,14 @@ def compress_picture(picture: str) -> io.BytesIO:
 def upload_picture(picture: str) -> str:
     compressed_picture = compress_picture(picture)
     response = requests.post(
-        'https://litterbox.catbox.moe/resources/internals/api.php', 
-        files={'fileToUpload': ('photo.webp', compressed_picture, 'image/webp')}, 
-        data={'reqtype': 'fileupload', 'time': '12h'},
+        'https://tmpfiles.org/api/v1/upload', 
+        files={'file': ('photo.webp', compressed_picture, 'image/webp')}, 
+        data={'reqtype': 'fileupload'},
     )
     response.raise_for_status()
-
-    return response.text
+    url = response.json().get('data').get('url')
+    download_url = url.replace('tmpfiles.org', 'tmpfiles.org/dl')
+    return download_url
     
 
 def remove_exif(picture: str) -> None:
