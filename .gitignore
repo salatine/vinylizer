@@ -1,3 +1,4 @@
 config.toml
 __pycache__
 products.json
+client_secrets.json
