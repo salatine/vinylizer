@@ -42,6 +42,7 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
     columns_to_write = get_columns_to_write(ws)
 
     for i, product in enumerate(products):
+        print(f'{i+1}/{len(products)}: {product.title}')
         fields = {
             'listing-type': 'Lista geral',
             'title': product.title,
@@ -78,8 +79,6 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
 
         for field, column in columns_to_write.items():
             ws[f'{column}{start_row + i}'] = fields[field]
-
-        print(f'ML | {i + 1}/{len(products)}: {product.title}')
 
     wb.save(spreadsheet_path)
 

@@ -38,13 +38,10 @@ class Product:
     @cached_property
     def picture_urls(self):
         uploaded_pictures = []
-        for picture in self.pictures:
-            status = 0
-            uploaded_picture = upload_picture(picture)
-            while status != 200:
-                response = requests.get(uploaded_picture)
-                status = response.status_code
-            uploaded_pictures.append(uploaded_picture)
+        for i, picture in enumerate(self.pictures):
+            url = upload_picture(picture)
+            uploaded_pictures.append(url)
+            print(f"\tPhoto {i+1}/{len(self.pictures)}: {picture}\n\tURL: {url}")
 
         return uploaded_pictures
 

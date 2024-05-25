@@ -79,7 +79,6 @@ def export_to_shopify_spreadsheet(output_path: str, products: List[Product]) -> 
             rows = [first_row] + additional_rows
 
             writer.writerows(rows)
-            print(f'Shopify | {i + 1}/{len(products)}: {product.title}')
 
 def get_product_handle(product: Product) -> str:
     # generate random uuid for handle, avoiding possible shopify conflicts
