@@ -5,6 +5,18 @@ from typing import Optional
 from vinylizer.edit_title import edit_title
 import requests
 
+ML_CHARACTER_LIMIT = 60
+QUANTITY_TRANSLATION = {
+    2: "Duplo",
+    3: "Triplo",
+    4: "Quádruplo",
+    5: "Quíntuplo",
+    6: "Sêxtuplo",
+    7: "Sétuplo",
+    8: "Óctuplo",
+    9: "Nônuplo",
+}
+
 @dataclass
 class Product:
     artist: str
@@ -43,12 +55,12 @@ class Product:
         observation_description = self.observation if self.observation else ""
 
         if self.gatefold_quantity >= 2:
-            gatefold_description = f"COM ENCARTES."
+            gatefold_description = "COM ENCARTES. "
         elif self.gatefold_quantity == 1:
-            gatefold_description = "COM ENCARTE."
+            gatefold_description = "COM ENCARTE. "
 
         if self.lps_quantity == 2:
-            lps_description = f"DISCO DUPLO. "
+            lps_description = "DISCO DUPLO. "
 
         if self.is_double_covered:
             lps_description += "CAPA DUPLA."
@@ -72,10 +84,11 @@ class Product:
         if self.is_repeated:
             title = f"Disco Vinil {album} {self.artist}"
         double = ""
+
         if self.is_double_covered:
             double = "Capa Dupla"
-        if self.lps_quantity == 2:
-            double = "Duplo"
+        if self.lps_quantity > 1 and self.lps_quantity < 10:
+            double = QUANTITY_TRANSLATION[self.lps_quantity]
 
         title += f" {double}"
         
@@ -93,7 +106,7 @@ class Product:
         # remove double spaces if any
         title = " ".join(title.split())
 
-        if len(title) > 60:
+        if len(title) > ML_CHARACTER_LIMIT:
             title = edit_title(title)
 
         return title
