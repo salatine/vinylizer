@@ -3,7 +3,7 @@ from functools import cached_property
 from vinylizer.picture_handler import upload_picture
 from typing import Optional
 from vinylizer.edit_title import edit_title
-import requests
+import os
 
 ML_CHARACTER_LIMIT = 60
 QUANTITY_TRANSLATION = {
@@ -41,7 +41,11 @@ class Product:
         for i, picture in enumerate(self.pictures):
             url = upload_picture(picture)
             uploaded_pictures.append(url)
-            print(f"\tPhoto {i+1}/{len(self.pictures)}: {picture}\n\tURL: {url}")
+            print(
+                f"\tPhoto {i+1}/{len(self.pictures)}: {picture}" \
+                f"\n\tSize: {os.path.getsize(picture)/1024:.2f}KB" \
+                f"\n\tURL: {url}\n"
+            )
 
         return uploaded_pictures
 
