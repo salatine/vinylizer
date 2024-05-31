@@ -85,14 +85,15 @@ class Product:
         title = f"Lp Vinil {self.artist} {album}"
         if self.is_repeated:
             title = f"Disco Vinil {album} {self.artist}"
-        double = ""
 
+        double = ""
         if self.is_double_covered:
             double = "Capa Dupla"
         if self.lps_quantity > 1 and self.lps_quantity < 10:
             double = QUANTITY_TRANSLATION[self.lps_quantity]
-
-        title += f" {double}"
+        
+        if double != "":
+            title += f" {double}"
         
         if self.gatefold_quantity >= 2:
             title += " Com Encartes"
