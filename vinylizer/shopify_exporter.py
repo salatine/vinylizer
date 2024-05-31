@@ -5,7 +5,7 @@ import io
 from slugify import slugify
 from uuid import uuid4
 
-TAG_RELATIONS = {
+VINYL_TAG_RELATIONS = {
     'all': 'LPs',
     'nacional': 'LPs - Nacional',
     'internacional': 'LPs - Internacional',
@@ -35,6 +35,53 @@ TAG_RELATIONS = {
     'outros': 'LPs - Outros',
     'outros-nacional': 'LPs - Outros Nacional',
     'outros-internacional': 'LPs - Outros Internacional',
+}
+
+TAG_RELATIONS = {
+    'Lp Vinil': VINYL_TAG_RELATIONS,
+    'Vinil Compacto': VINYL_TAG_RELATIONS,
+    'CD': {
+        'all': 'CDs',
+        'mpb': 'CDs - MPB',
+        'blues': 'CDs - Blues & Jazz',
+        'jazz': 'CDs - Blues & Jazz',
+        'dance': 'CDs - Dance Music',
+        'trilhas': 'CDs - Trilhas Sonoras',
+        'rock-nacional': 'CDs - Rock/POP Nacional',
+        'pop-nacional': 'CDs - Rock/POP Nacional',
+        'rock-internacional': 'CDs - Rock/POP Internacional',
+        'pop-internacional': 'CDs - Rock/POP Internacional',
+        'samba': 'CDs - Samba & Pagode',
+        'pagode': 'CDs - Samba & Pagode',
+        'sertanejo': 'CDs - Sertanejo',
+        'forró': 'CDs - Forró',
+        'outros': 'CDs - Outros',
+    },
+
+    'DVD': {
+        'all': 'DVDs - Música',
+        'rock-nacional': 'DVDs Música - Rock/POP Nacional',
+        'pop-nacional': 'DVDs Música - Rock/POP Nacional',
+        'rock-internacional': 'DVDs Música - Rock/POP Internacional',
+        'pop-internacional': 'DVDs Música - Rock/POP Internacional',
+        'mpb': 'DVDs Música - MPB',
+        'samba': 'DVDs Música - Samba & Pagode',
+        'pagode': 'DVDs Música - Samba & Pagode',
+        'sertanejo': 'DVDs Música - Sertanejo',
+        'ópera': 'DVDs Música - Ópera',
+        'forró': 'DVDs Música - Forró & Música Nordestina',
+        'outros': 'DVDs Música - Outros',
+    },
+
+    'K7': {
+        'all': 'K7',
+    },
+
+    'LD': {
+        'all': 'Outros',
+        'nacional': 'Outros - LD LaserDisc',
+        'internacional': 'Outros - LD LaserDisc',
+    },
 }
 
 COLUMNS = ['Handle', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type', 'Tags', 'Published', 'Option1 Name', 'Option1 Value', 'Option2 Name', 'Option2 Value', 'Option3 Name', 'Option3 Value', 'Variant SKU', 'Variant Grams', 'Variant Inventory Tracker', 'Variant Inventory Qty', 'Variant Inventory Policy', 'Variant Fulfillment Service', 'Variant Price', 'Variant Compare At Price', 'Variant Requires Shipping', 'Variant Taxable', 'Variant Barcode', 'Image Src', 'Image Position', 'Image Alt Text', 'Gift Card', 'SEO Title', 'SEO Description', 'Google Shopping / Google Product Category', 'Google Shopping / Gender', 'Google Shopping / Age Group', 'Google Shopping / MPN', 'Google Shopping / Condition', 'Google Shopping / Custom Product', 'Google Shopping / Custom Label 0', 'Google Shopping / Custom Label 1', 'Google Shopping / Custom Label 2', 'Google Shopping / Custom Label 3', 'Google Shopping / Custom Label 4', 'Variant Image', 'Variant Weight Unit', 'Variant Tax Code', 'Cost per item', 'Included / Brazil', 'Price / Brazil', 'Compare At Price / Brazil', 'Included / International', 'Price / International', 'Compare At Price / International', 'Status']
@@ -90,14 +137,16 @@ def get_product_tags(product: Product) -> List[str]:
     genres = [genre.lower() for genre in product.genres]
 
     tags = []
-    tags.append(TAG_RELATIONS['all'])
-    tags.append(TAG_RELATIONS[nationality])
+    tags.append(TAG_RELATIONS[product.format]['all'])
+    if nationality in TAG_RELATIONS[product.format].keys():
+        tags.append(TAG_RELATIONS[product.format][nationality])
+
     for genre in genres:
         genre_nationality = f'{genre}-{nationality}'
         if genre in TAG_RELATIONS.keys():
-            tags.append(TAG_RELATIONS[genre])
+            tags.append(TAG_RELATIONS[product.format][genre])
 
         if genre_nationality in TAG_RELATIONS.keys():
-            tags.append(TAG_RELATIONS[genre_nationality])
+            tags.append(TAG_RELATIONS[product.format][genre_nationality])
 
     return tags
