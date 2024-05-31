@@ -23,6 +23,7 @@ def main():
     json_products = get_json_products()
 
     products = get_products(client, json_products)
+    check_products(products)
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
 
@@ -397,6 +398,9 @@ def get_resume_sheet_path() -> str:
     data = datetime.now().strftime("%d.%m.%Y")
     return str(Path(CONFIG["resume_directory_path"]) / f'Relação {data}.xlsx')
 
+def check_products(products: List[Product]):
+    for product in products:
+        print(product.title, len(product.title))
 
 if __name__ == "__main__":
     main()
