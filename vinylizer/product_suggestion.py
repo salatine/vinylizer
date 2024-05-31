@@ -15,6 +15,7 @@ class ProductSuggestion:
     release_year: Optional[int]
     label: Optional[str]
     observation: Optional[str]
+    is_imported: Optional[bool]
 
-NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None, None, None, None)
+NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None, None, None, None, None)
 

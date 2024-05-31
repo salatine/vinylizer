@@ -34,6 +34,7 @@ class Product:
     release_year: Optional[int]
     label: Optional[str]
     observation: Optional[str]
+    is_imported: Optional[bool]
     
     @cached_property
     def picture_urls(self):
@@ -100,6 +101,9 @@ class Product:
         
         if self.is_repeated:
             title += " A"
+
+        if self.is_imported:
+            title += " Importado"
 
         if self.observation:
             title += f", Leia"

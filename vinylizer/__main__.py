@@ -74,6 +74,7 @@ def load_json_products() -> List[Product]:
                 release_year = json_product['release_year'],
                 label = json_product['label'],
                 observation = json_product['observation'],
+                is_imported = json_product['is_imported'],
             )
             products.append(product)
 
@@ -111,6 +112,7 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
             album_duration = suggestion.album_duration or 0,
             release_year = suggestion.release_year or None,
             label = suggestion.label or None,
+            is_imported = suggestion.is_imported,
         )
         print('\nproduto cadastrado: ')
         display_product_information(product)
@@ -148,6 +150,7 @@ def save_json_products(products: List[Product]):
                 'release_year': product.release_year,
                 'label': product.label,
                 'observation': product.observation,
+                'is_imported': product.is_imported,
             }
             json_products.append(json_product)
 
@@ -248,6 +251,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        release_year = vinyl_to_suggest.year if vinyl_to_suggest.year != "0" and vinyl_to_suggest else None,
        label = vinyl_to_suggest.labels[0].name,
        observation = None,
+       is_imported = vinyl_to_suggest.country != 'Brazil',
     )
 
 def get_token() -> str:
@@ -400,7 +404,9 @@ def get_resume_sheet_path() -> str:
 
 def check_products(products: List[Product]):
     for product in products:
-        print(product.title, len(product.title))
+        print(product.title)
+
+    print()
 
 if __name__ == "__main__":
     main()
