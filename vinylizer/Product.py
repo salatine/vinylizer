@@ -19,6 +19,7 @@ QUANTITY_TRANSLATION = {
 
 @dataclass
 class Product:
+    format: str
     artist: str
     album: str
     price: float
@@ -82,7 +83,7 @@ class Product:
         album = self.album
         if album == self.artist:
             album = self.release_year or None
-        title = f"Lp Vinil {self.artist} {album}"
+        title = f"{self.format} {self.artist} {album}"
         if self.is_repeated:
             title = f"Disco Vinil {album} {self.artist}"
 

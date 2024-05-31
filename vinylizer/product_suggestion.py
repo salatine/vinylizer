@@ -3,6 +3,7 @@ from typing import Optional
 
 @dataclass
 class ProductSuggestion:
+    format: Optional[str]
     artist: Optional[str]
     album: Optional[str]
     lps_quantity: Optional[int]
@@ -17,5 +18,5 @@ class ProductSuggestion:
     observation: Optional[str]
     is_imported: Optional[bool]
 
-NULL_SUGGESTION = ProductSuggestion(None, None, None, [], None, None, None, None, None, None, None, None, None)
+NULL_SUGGESTION = ProductSuggestion(None, None, None, None, [], None, None, None, None, None, None, None, None, None)
 

@@ -13,6 +13,15 @@ from vinylizer.emailer import send_email
 import json
 from vinylizer.resume_sheet import create_resume_sheet
 
+FORMATS = [
+    "Lp Vinil",
+    "Vinil Compacto",
+    "CD",
+    "DVD",
+    "K7",
+    "LD LaserDisc",
+]
+
 with open('./config.toml', 'rb') as file:
     CONFIG = tomli.load(file)
 
@@ -22,7 +31,7 @@ def main():
     
     json_products = get_json_products()
 
-    products = get_products(client, json_products)
+    products = create_products(client, json_products)
     check_products(products)
     export_to_ml_spreadsheet(get_ml_spreadsheet(), products) 
     export_to_shopify_spreadsheet(get_shopify_spreadsheet(), products)
@@ -59,6 +68,7 @@ def load_json_products() -> List[Product]:
         json_products = json.load(file)
         for json_product in json_products:
             product = Product(
+                format = json_product['format'],
                 artist = json_product['artist'],
                 album = json_product['album'],
                 price = json_product['price'],
@@ -80,7 +90,7 @@ def load_json_products() -> List[Product]:
 
     return products
 
-def get_products(client: discogs_client.Client, json_products: List[Product]) -> List[Product]:
+def create_products(client: discogs_client.Client, json_products: List[Product]) -> List[Product]:
     products = json_products
     if len(products) > 0 and input('\ndeseja cadastrar mais produtos? [S/n]: ').lower() == 'n':
         return products
@@ -96,6 +106,7 @@ def get_products(client: discogs_client.Client, json_products: List[Product]) ->
                 continue
 
         product = Product(
+            format = get_format(suggestion.format or '0'),
             artist = get_artist_name(suggestion.artist),
             album = get_album_name(suggestion.album),
             price = get_price(),
@@ -135,6 +146,7 @@ def save_json_products(products: List[Product]):
         json_products = []
         for product in products:
             json_product = {
+                'format': product.format,
                 'artist': product.artist,
                 'album': product.album,
                 'price': product.price,
@@ -171,6 +183,9 @@ def change_product_values(product: Product, suggestion: ProductSuggestion):
         print('\t5: gênero(s)')
         print('\t6: nacional')
         print('\t7: repetido')
+        print('\t8: capa dupla')
+        print('\t9: formato')
+        print('\t10: observação')
         choice = input('\nqual valor deseja alterar? [0]: ') or '0'
         match(choice):
             case 'q':
@@ -191,6 +206,12 @@ def change_product_values(product: Product, suggestion: ProductSuggestion):
                 product.is_national = is_national(suggestion.is_national)
             case '7':
                 product.is_repeated = is_repeated(suggestion.is_repeated)
+            case '8':
+                product.is_double_covered = get_is_double_covered(suggestion.is_double_covered)
+            case '9':
+                product.format = get_format(suggestion.format)
+            case '10':
+                product.observation = get_observation()
             case _:
                 print('valor inválido, tente novamente!')
                 continue
@@ -238,7 +259,13 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
         suggestion_artist = vinyl_to_suggest.artists[0].name
         suggestion_is_national = 'brazil' in vinyl_to_suggest.artists[0].profile.lower()
 
+    suggestion_format = str(FORMATS.index('Lp Vinil'))
+    for format in FORMATS:
+        if vinyl_to_suggest.formats[0]['name'] in format:
+            suggestion_format = str(FORMATS.index(format))
+
     return ProductSuggestion(
+       format = suggestion_format,
        artist = suggestion_artist,
        album = vinyl_to_suggest.title if vinyl_to_suggest != suggestion_artist else vinyl_to_suggest.year or None,
        lps_quantity = int(vinyl_to_suggest.formats[0]['qty']),
@@ -260,6 +287,18 @@ def get_token() -> str:
 def get_client(token: str) -> discogs_client.Client:
     return discogs_client.Client('vinylizer/0.1', user_token=token)
 
+def get_format(suggestion: str) -> str:
+    print()
+    for i, format in enumerate(FORMATS):
+        print(f'{i}: {format}')
+
+    choice = input(f'\nformato [{suggestion}]: ') or suggestion
+    while not choice.isdigit() or int(choice) >= len(FORMATS):
+        print(f'valor inválido, selecione um número entre 0 e {len(FORMATS) - 1}')
+        choice = input(f'\nformato [{suggestion}]: ') or suggestion
+
+    return FORMATS[int(choice)]
+
 def get_album_name(suggestion: Optional[str]) -> str:
     return get_field_with_suggestion('nome do álbum', suggestion=suggestion)
 
@@ -267,7 +306,7 @@ def get_artist_name(suggestion: Optional[str]) -> str:
     return get_field_with_suggestion('nome do artista', suggestion=suggestion)
 
 def get_is_double_covered(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('capa dupla (S/n)', cast_function=tobool, suggestion=suggestion)
+    return get_field_with_suggestion('capa dupla (s/N)', cast_function=tobool, suggestion=suggestion)
 
 def get_vinyl_code() -> str:
     return input('pesquisa do vinil: ')
@@ -281,10 +320,10 @@ def tobool(value: str) -> bool:
     raise ValueError('valor inválido!')
 
 def is_national(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('nacional (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
+    return get_field_with_suggestion('nacional (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
 def is_repeated(suggestion: Optional[bool]) -> bool:
-    return get_field_with_suggestion('repetido (S/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
+    return get_field_with_suggestion('repetido (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
 def get_pictures() -> List[str]:
     products = []
@@ -305,7 +344,7 @@ def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]
 
 def get_observation() -> str:
-    return get_field_with_suggestion('observação', cast_function=str, suggestion='')
+    return get_field_with_suggestion('observação', suggestion='')
 
 def get_price() -> float:
     return get_field_with_suggestion('preço', cast_function=float, suggestion=30)
@@ -389,6 +428,7 @@ def get_field_with_suggestion(
             continue
 
 def display_product_information(product: Product):
+    print(f'\tformato: {product.format}')
     print(f'\tnome do artista: {product.artist}')
     print(f'\tnome do álbum: {product.album}')
     print(f'\tpreço: R${product.price}')
@@ -397,6 +437,8 @@ def display_product_information(product: Product):
     print(f'\tgênero(s): {product.genres}')
     print(f'\tnacional: {product.is_national}')
     print(f'\trepetido: {product.is_repeated}')
+    print(f'\tcapa dupla: {product.is_double_covered}')
+    print(f'\tobservação: {product.observation}')
 
 def get_resume_sheet_path() -> str:
     data = datetime.now().strftime("%d.%m.%Y")
