@@ -77,7 +77,7 @@ TAG_RELATIONS = {
         'all': 'K7',
     },
 
-    'LD': {
+    'LD LaserDisc': {
         'all': 'Outros',
         'nacional': 'Outros - LD LaserDisc',
         'internacional': 'Outros - LD LaserDisc',
