@@ -62,11 +62,14 @@ class Product:
         elif self.gatefold_quantity == 1:
             gatefold_description = "COM ENCARTE. "
 
-        if self.lps_quantity == 2:
-            lps_description = "DISCO DUPLO. "
+        if self.lps_quantity > 1 and self.lps_quantity < 10:
+            lps_description = f"DISCO {QUANTITY_TRANSLATION[self.lps_quantity].upper()}. "
 
         if self.is_double_covered:
             lps_description += "CAPA DUPLA."
+
+        if self.is_imported:
+            lps_description += " IMPORTADO."
 
         return f"PRODUTO USADO EM BOM ESTADO.\n{gatefold_description} {lps_description}\n{observation_description}"
 
