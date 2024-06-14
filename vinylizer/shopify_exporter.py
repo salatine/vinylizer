@@ -153,10 +153,10 @@ def get_product_tags(product: Product) -> List[str]:
 
     for genre in genres:
         genre_nationality = f'{genre}-{nationality}'
-        if genre in TAG_RELATIONS.keys():
+        if genre in TAG_RELATIONS[product.format].keys():
             tags.append(TAG_RELATIONS[product.format][genre])
 
-        if genre_nationality in TAG_RELATIONS.keys():
+        if genre_nationality in TAG_RELATIONS[product.format].keys():
             tags.append(TAG_RELATIONS[product.format][genre_nationality])
 
     return tags
