@@ -104,9 +104,10 @@ def create_products(client: discogs_client.Client, json_products: List[Product])
                 break
             else:
                 continue
-
+        
+        format = get_format(suggestion.format or '0')
         product = Product(
-            format = get_format(suggestion.format or '0'),
+            format = format,
             artist = get_artist_name(suggestion.artist),
             album = get_album_name(suggestion.album),
             price = get_price(),
@@ -117,7 +118,7 @@ def create_products(client: discogs_client.Client, json_products: List[Product])
             is_national = is_national(suggestion.is_national),
             is_repeated = is_repeated(suggestion.is_repeated),
             is_double_covered = get_is_double_covered(suggestion.is_double_covered),
-            pictures = get_pictures(),
+            pictures = get_pictures(format),
             # campos opcionais
             song_quantity = suggestion.song_quantity or 1,
             album_duration = suggestion.album_duration or 0,
@@ -325,17 +326,18 @@ def is_national(suggestion: Optional[bool]) -> bool:
 def is_repeated(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('repetido (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
-def get_pictures() -> List[str]:
-    products = []
+def get_pictures(format: str) -> List[str]:
+    pictures = []
     if platform.system() == 'Linux':
-       products = get_pictures_binux()
+       pictures = get_pictures_binux()
     else:
-        products = get_pictures_bindows()
+        pictures = get_pictures_bindows()
 
-    # this is done because normally the main photo is the last one in the list
-    products = products[-1:] + products[:-1]
+    # this is done because normally the main photo is the last one in the list with vinyls
+    if format == FORMATS[0]:
+        pictures = pictures[-1:] + pictures[:-1]
 
-    return products
+    return pictures
 
 def get_pictures_binux() -> List[str]:
     return input('drag n\' drop: ').strip(' ').split(' ')
