@@ -18,7 +18,7 @@ FORMATS = [
     "Vinil Compacto",
     "CD",
     "DVD",
-    "K7",
+    "Fita K7 Cassette",
     "LD LaserDisc",
 ]
 
