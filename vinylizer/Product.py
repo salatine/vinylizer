@@ -26,8 +26,10 @@ class Product:
     gatefold_quantity: int
     lps_quantity: int
     genres: list[str]
+    is_new: bool
     is_national: bool
     is_repeated: bool
+    stock: int
     is_double_covered: bool
     pictures: list[str]
     song_quantity: Optional[int]
@@ -53,6 +55,7 @@ class Product:
 
     @property
     def description(self):
+        product_description = "PRODUTO NOVO, LACRADO." if self.is_new else "PRODUTO USADO EM BOM ESTADO." 
         gatefold_description = ""
         lps_description = ""
         observation_description = self.observation if self.observation else ""
@@ -71,7 +74,7 @@ class Product:
         if self.is_imported:
             lps_description += " IMPORTADO."
 
-        return f"PRODUTO USADO EM BOM ESTADO.\n{gatefold_description} {lps_description}\n{observation_description}"
+        return f"{product_description}\n{gatefold_description} {lps_description}\n{observation_description}"
 
     @property
     def nationality_text(self):
@@ -106,6 +109,9 @@ class Product:
         
         if self.is_repeated:
             title += " A"
+
+        if self.is_new:
+            title += " Novo Lacrado"
 
         if self.is_imported:
             title += " Importado"

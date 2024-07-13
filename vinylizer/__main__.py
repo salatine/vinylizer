@@ -75,8 +75,10 @@ def load_json_products() -> List[Product]:
                 gatefold_quantity = json_product['gatefold_quantity'],
                 lps_quantity = json_product['lps_quantity'],
                 genres = json_product['genres'],
+                is_new = json_product['is_new'],
                 is_national = json_product['is_national'],
                 is_repeated = json_product['is_repeated'],
+                stock = json_product['stock'],
                 is_double_covered = json_product['is_double_covered'],
                 pictures = json_product['pictures'],
                 song_quantity = json_product['song_quantity'],
@@ -106,6 +108,7 @@ def create_products(client: discogs_client.Client, json_products: List[Product])
                 continue
         
         format = get_format(suggestion.format or '0')
+        is_new = get_is_new(suggestion.is_new)
         product = Product(
             format = format,
             artist = get_artist_name(suggestion.artist),
@@ -115,10 +118,12 @@ def create_products(client: discogs_client.Client, json_products: List[Product])
             lps_quantity = get_lps_quantity(suggestion.lps_quantity),
             genres = get_genres(suggestion.genres),
             observation = get_observation(),
-            is_national = is_national(suggestion.is_national),
-            is_repeated = is_repeated(suggestion.is_repeated),
+            is_new = is_new,
+            is_national = get_is_national(suggestion.is_national),
+            is_repeated = get_is_repeated(suggestion.is_repeated),
+            stock = 1 if not is_new else get_stock(suggestion.stock),
             is_double_covered = get_is_double_covered(suggestion.is_double_covered),
-            pictures = get_pictures(format),
+            pictures = get_pictures(format, is_new),
             # campos opcionais
             song_quantity = suggestion.song_quantity or 1,
             album_duration = suggestion.album_duration or 0,
@@ -154,8 +159,10 @@ def save_json_products(products: List[Product]):
                 'gatefold_quantity': product.gatefold_quantity,
                 'lps_quantity': product.lps_quantity,
                 'genres': product.genres,
+                'is_new': product.is_new,
                 'is_national': product.is_national,
                 'is_repeated': product.is_repeated,
+                'stock': product.stock,
                 'is_double_covered': product.is_double_covered,
                 'pictures': product.pictures,
                 'song_quantity': product.song_quantity,
@@ -204,9 +211,9 @@ def change_product_values(product: Product, suggestion: ProductSuggestion):
             case '5':
                 product.genres = get_genres(suggestion.genres)
             case '6':
-                product.is_national = is_national(suggestion.is_national)
+                product.is_national = get_is_national(suggestion.is_national)
             case '7':
-                product.is_repeated = is_repeated(suggestion.is_repeated)
+                product.is_repeated = get_is_repeated(suggestion.is_repeated)
             case '8':
                 product.is_double_covered = get_is_double_covered(suggestion.is_double_covered)
             case '9':
@@ -272,14 +279,16 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
        lps_quantity = int(vinyl_to_suggest.formats[0]['qty']),
        genres = vinyl_to_suggest.genres,
        is_national = suggestion_is_national,
+       is_new = False,
        is_repeated = False,
        is_double_covered = False,
        song_quantity = len(vinyl_to_suggest.tracklist),
        album_duration = get_album_duration(vinyl_to_suggest),
        release_year = vinyl_to_suggest.year if vinyl_to_suggest.year != "0" and vinyl_to_suggest else None,
        label = vinyl_to_suggest.labels[0].name,
-       observation = None,
        is_imported = vinyl_to_suggest.country != 'Brazil',
+       stock = None,
+       observation = None,
     )
 
 def get_token() -> str:
@@ -320,13 +329,19 @@ def tobool(value: str) -> bool:
 
     raise ValueError('valor inválido!')
 
-def is_national(suggestion: Optional[bool]) -> bool:
+def get_is_new(suggestion: Optional[bool]) -> bool:
+    return get_field_with_suggestion('novo (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
+
+def get_is_national(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('nacional (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
-def is_repeated(suggestion: Optional[bool]) -> bool:
+def get_is_repeated(suggestion: Optional[bool]) -> bool:
     return get_field_with_suggestion('repetido (s/n)', cast_function=tobool, suggestion=suggestion is not None and suggestion or False)
 
-def get_pictures(format: str) -> List[str]:
+def get_stock(suggestion: Optional[int]) -> int:
+    return get_field_with_suggestion('unidades', cast_function=int, suggestion=suggestion)
+
+def get_pictures(format: str, is_new: bool) -> List[str]:
     pictures = []
     if platform.system() == 'Linux':
        pictures = get_pictures_binux()
@@ -334,7 +349,7 @@ def get_pictures(format: str) -> List[str]:
         pictures = get_pictures_bindows()
 
     # this is done because normally the main photo is the last one in the list with vinyls
-    if format == FORMATS[0]:
+    if format == FORMATS[0] and is_new == False:
         pictures = pictures[-1:] + pictures[:-1]
 
     return pictures
@@ -437,6 +452,7 @@ def display_product_information(product: Product):
     print(f'\tquantidade de encartes: {product.gatefold_quantity}')
     print(f'\tquantidade de discos: {product.lps_quantity}')
     print(f'\tgênero(s): {product.genres}')
+    print(f'\tnovo: {product.is_new}')
     print(f'\tnacional: {product.is_national}')
     print(f'\trepetido: {product.is_repeated}')
     print(f'\tcapa dupla: {product.is_double_covered}')

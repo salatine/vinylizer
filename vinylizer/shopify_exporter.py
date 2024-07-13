@@ -7,6 +7,7 @@ from uuid import uuid4
 
 VINYL_TAG_RELATIONS = {
     'all': 'LPs',
+    'novo': 'LPs - Novos / Lacrados',
     'nacional': 'LPs - Nacional',
     'internacional': 'LPs - Internacional',
     'compactos': 'LPs - Compactos',
@@ -30,6 +31,7 @@ VINYL_TAG_RELATIONS = {
     'samba': 'LPs - Samba & Pagode',
     'pagode': 'LPs - Samba & Pagode',
     'sertanejo': 'LPs - Sertanejo',
+    'classica': 'LPs - Clássicas e Orquestras',
     'orquestra': 'LPs - Clássicas e Orquestras',
     'latin': 'LPs - Latinas e Europeias',
     'outros': 'LPs - Outros',
@@ -118,7 +120,7 @@ def export_to_shopify_spreadsheet(output_path: str, products: List[Product]) -> 
                 'Published': 'true',
                 'Variant Grams': '100000.0',
                 'Variant Inventory Tracker': 'shopify',
-                'Variant Inventory Qty': '1',
+                'Variant Inventory Qty': str(product.stock),
                 'Variant Inventory Policy': 'deny',
                 'Variant Fulfillment Service': 'manual',
                 'Variant Price': product.price,
@@ -150,6 +152,9 @@ def get_product_tags(product: Product) -> List[str]:
     tags.append(TAG_RELATIONS[product.format]['all'])
     if nationality in TAG_RELATIONS[product.format].keys():
         tags.append(TAG_RELATIONS[product.format][nationality])
+
+    if product.format == 'Lp Vinil' and product.is_new == True:
+        tags.append(TAG_RELATIONS[product.format]['novo'])
 
     for genre in genres:
         genre_nationality = f'{genre}-{nationality}'
