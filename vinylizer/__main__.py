@@ -12,6 +12,7 @@ from datetime import timedelta, datetime
 from vinylizer.emailer import send_email
 import json
 from vinylizer.resume_sheet import create_resume_sheet
+from discogs_client.exceptions import HTTPError
 
 FORMATS = [
     "Lp Vinil",
@@ -241,8 +242,14 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
         if n < 1:
             print("nenhum álbum com essa pesquisa foi encontrado")
         for i in range(n):
+            try:
+                code = vinyls[i].labels[0].catno
+            except HTTPError:
+                i -= 1
+                continue
+
             print(f'{i}: {vinyls[i].title}. Ano de lançamento: {vinyls[i].year}. Format: {vinyls[i].formats[0]}. ' + \
-                  f'País: {vinyls[i].country}. Código: {vinyls[i].labels[0].catno}')
+                  f'País: {vinyls[i].country}. Código: {code}')
         print('\nn: nenhum dos anteriores, não obter sugestões do discogs')
         print('r: pesquisar novamente')
         print('q: sair\n')
