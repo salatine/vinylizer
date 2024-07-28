@@ -75,7 +75,7 @@ TAG_RELATIONS = {
         'outros': 'DVDs Música - Outros',
     },
 
-    'Fita K7 Cassette': {
+    'Fita K7 Cassete': {
         'all': 'K7',
     },
 
@@ -91,7 +91,7 @@ PRODUCT_CATEGORY_RELATIONS = {
     'Vinil Compacto': 'Mídia > Gravações de músicas > Vinil',
     'CD': 'Mídia > Gravações de músicas > CDs de música',
     'DVD': 'Mídia > Vídeos > DVDs',
-    'Fita K7 Cassette': 'Mídia > Gravações de músicas > Fitas cassete de música',
+    'Fita K7 Cassete': 'Mídia > Gravações de músicas > Fitas cassete de música',
     'LD LaserDisc': 'Mídia > Gravações de músicas > Discos e LPs',
 }
 
