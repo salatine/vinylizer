@@ -244,7 +244,7 @@ def get_product_suggestion_with_discogs(client: discogs_client.Client) -> Produc
         for i in range(n):
             try:
                 code = vinyls[i].labels[0].catno
-            except HTTPError:
+            except Exception:
                 i -= 1
                 continue
 
