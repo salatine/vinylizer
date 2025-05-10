@@ -32,6 +32,9 @@ FIELDS_BY_CELL_VALUE = {
     'Gênero': 'genre',
     'Acessórios': 'accessories',
     'peças': 'pieces',
+    'Preço': 'price-ml',
+    'Custo de envio': 'shipping-ml',
+
 }
 
 def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> None:
@@ -51,13 +54,11 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
             'stock': product.stock,
             'channel': 'Mercado Livre',
             'price-ml': product.price,
-            'price-ms': product.price,
             'condition': 'Novo' if product.is_new else 'Usado',
             'description': product.description,
             'type': 'Clássico',
             'shipping-mode': 'Mercado Envios | Mercado Envios Flex',
             'shipping-ml': 'Por conta do comprador',
-            'shipping-ms': 'Por conta do comprador',
             'pickup': 'Não aceito',
             'warranty': 'Sem garantia',
             'artist': product.artist if product.artist else product.album,
@@ -100,20 +101,6 @@ def get_columns_to_write(ws: worksheet.Worksheet) -> dict:
             for cell_value, field in FIELDS_BY_CELL_VALUE.items():
                 if cell_value in value:
                     columns_to_write[field] = cell.column_letter
-            header_row_cell_value = str(parser_merged_cell(ws, HEADER_ROW, cell.column).value)
-            if 'Mercado Livre' in value:
-                if 'Preço' in header_row_cell_value:
-                    columns_to_write['price-ml'] = cell.column_letter
-
-                if 'Frete' in header_row_cell_value:
-                    columns_to_write['shipping-ml'] = cell.column_letter
-
-            if 'Mercado Shops' in value:
-                if 'Preço' in header_row_cell_value:
-                    columns_to_write['price-ms'] = cell.column_letter
-
-                if 'Frete' in header_row_cell_value:
-                    columns_to_write['shipping-ms'] = cell.column_letter
 
             if 'Duração total do álbum' in value:
                 if 'Duração total do álbum' == value:
