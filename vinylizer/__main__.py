@@ -362,7 +362,7 @@ def get_pictures(format: str, is_new: bool) -> List[str]:
     return pictures
 
 def get_pictures_binux() -> List[str]:
-    return input('drag n\' drop: ').strip(' ').split(' ')
+    return input('drag n\' drop: ').replace("\"", "").strip(' ').split(' ')
 
 def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]
