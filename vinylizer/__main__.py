@@ -16,7 +16,7 @@ from discogs_client.exceptions import HTTPError
 
 FORMATS = [
     "Lp Vinil",
-    "Vinil Compacto",
+    "Compacto Vinil",
     "CD",
     "DVD",
     "Fita K7 Cassete",
@@ -354,15 +354,14 @@ def get_pictures(format: str, is_new: bool) -> List[str]:
        pictures = get_pictures_binux()
     else:
         pictures = get_pictures_bindows()
-
-    # this is done because normally the main photo is the last one in the list with vinyls
-    if format == FORMATS[0] and is_new == False:
-        pictures = pictures[-1:] + pictures[:-1]
+        # this is done because normally the main photo is the last one in the list with vinyls
+        if format == FORMATS[0] and is_new == False:
+            pictures = pictures[-1:] + pictures[:-1]
 
     return pictures
 
 def get_pictures_binux() -> List[str]:
-    return input('drag n\' drop: ').replace("\"", "").strip(' ').split(' ')
+    return input('drag n\' drop: ').replace('\'', "").replace("\"", "").replace("C:\\", "/mnt/c/").replace("\\", "/").strip(' ').split(' ')
 
 def get_pictures_bindows() -> List[str]:
     return QtWidgets.QFileDialog.getOpenFileNames(None, "selecionar fotos", CONFIG["pictures_path"], "image files (*.png *.jpg)")[0]

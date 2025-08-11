@@ -41,7 +41,7 @@ VINYL_TAG_RELATIONS = {
 
 TAG_RELATIONS = {
     'Lp Vinil': VINYL_TAG_RELATIONS,
-    'Vinil Compacto': VINYL_TAG_RELATIONS,
+    'Compacto Vinil': VINYL_TAG_RELATIONS,
     'CD': {
         'all': 'CDs',
         'mpb': 'CDs - MPB',
@@ -88,7 +88,7 @@ TAG_RELATIONS = {
 
 PRODUCT_CATEGORY_RELATIONS = {
     'Lp Vinil': 'Mídia > Gravações de músicas > Discos e LPs',
-    'Vinil Compacto': 'Mídia > Gravações de músicas > Vinil',
+    'Compacto Vinil': 'Mídia > Gravações de músicas > Vinil',
     'CD': 'Mídia > Gravações de músicas > CDs de música',
     'DVD': 'Mídia > Vídeos > DVDs',
     'Fita K7 Cassete': 'Mídia > Gravações de músicas > Fitas cassete de música',
