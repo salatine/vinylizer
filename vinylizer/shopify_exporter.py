@@ -95,6 +95,15 @@ PRODUCT_CATEGORY_RELATIONS = {
     'LD LaserDisc': 'Mídia > Gravações de músicas > Discos e LPs',
 }
 
+PRODUCT_GRAMS_RELATIONS = {
+    'Lp Vinil': '100000.0',
+    'LD LaserDisc': '100000.0',
+    'Compacto Vinil': '10000.0',
+    'Fita K7 Cassete': '1000.0',
+    'CD': '100.0',
+    'DVD': '100.0',
+}
+
 COLUMNS = ['Handle', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type', 'Tags', 'Published', 'Option1 Name', 'Option1 Value', 'Option2 Name', 'Option2 Value', 'Option3 Name', 'Option3 Value', 'Variant SKU', 'Variant Grams', 'Variant Inventory Tracker', 'Variant Inventory Qty', 'Variant Inventory Policy', 'Variant Fulfillment Service', 'Variant Price', 'Variant Compare At Price', 'Variant Requires Shipping', 'Variant Taxable', 'Variant Barcode', 'Image Src', 'Image Position', 'Image Alt Text', 'Gift Card', 'SEO Title', 'SEO Description', 'Google Shopping / Google Product Category', 'Google Shopping / Gender', 'Google Shopping / Age Group', 'Google Shopping / MPN', 'Google Shopping / Condition', 'Google Shopping / Custom Product', 'Google Shopping / Custom Label 0', 'Google Shopping / Custom Label 1', 'Google Shopping / Custom Label 2', 'Google Shopping / Custom Label 3', 'Google Shopping / Custom Label 4', 'Variant Image', 'Variant Weight Unit', 'Variant Tax Code', 'Cost per item', 'Included / Brazil', 'Price / Brazil', 'Compare At Price / Brazil', 'Included / International', 'Price / International', 'Compare At Price / International', 'Status']
 
 def export_to_shopify_spreadsheet(output_path: str, products: List[Product]) -> None:
@@ -118,7 +127,7 @@ def export_to_shopify_spreadsheet(output_path: str, products: List[Product]) -> 
                 'Vendor': 'Searom Discos',
                 'Tags': ', '.join(get_product_tags(product)),
                 'Published': 'true',
-                'Variant Grams': '100000.0',
+                'Variant Grams': PRODUCT_GRAMS_RELATIONS[product.format],
                 'Variant Inventory Tracker': 'shopify',
                 'Variant Inventory Qty': str(product.stock),
                 'Variant Inventory Policy': 'deny',
