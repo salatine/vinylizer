@@ -45,6 +45,7 @@ TAG_RELATIONS = {
     'CD': {
         'all': 'CDs',
         'mpb': 'CDs - MPB',
+        'metal': 'CDs - Metal',
         'blues': 'CDs - Blues & Jazz',
         'jazz': 'CDs - Blues & Jazz',
         'dance': 'CDs - Dance Music',
