@@ -47,13 +47,13 @@ MEASURES_BY_FORMAT = {
         'depth': 40,
         'weight': 1,
     },
-    # TODO: measurements for these others formats
     'Compacto Vinil': {
-        'width': 0,
-        'height': 0,
-        'depth': 0,
-        'weight': 0,
+        'width': 22,
+        'height': 4,
+        'depth': 22,
+        'weight': 0.5,
     },
+    # TODO: measurements for these others formats
     'CD': {
         'width': 0,
         'height': 0,
