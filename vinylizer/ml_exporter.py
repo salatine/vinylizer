@@ -34,7 +34,50 @@ FIELDS_BY_CELL_VALUE = {
     'peças': 'pieces',
     'Preço': 'price-ml',
     'Custo de envio': 'shipping-ml',
+    'Largura (cm)': 'width',
+    'Altura (cm)': 'height',
+    'Profundidade (cm)': 'depth',
+    'Peso físico (kg)': 'weight',
+}
 
+MEASURES_BY_FORMAT = {
+    'Lp Vinil': {
+        'width': 40,
+        'height': 5,
+        'depth': 40,
+        'weight': 1,
+    },
+    # TODO: measurements for these others formats
+    'Compacto Vinil': {
+        'width': 0,
+        'height': 0,
+        'depth': 0,
+        'weight': 0,
+    },
+    'CD': {
+        'width': 0,
+        'height': 0,
+        'depth': 0,
+        'weight': 0,
+    },
+    'DVD': {
+        'width': 0,
+        'height': 0,
+        'depth': 0,
+        'weight': 0,
+    },
+    'Fita K0 Cassete': {
+        'width': 0,
+        'height': 0,
+        'depth': 0,
+        'weight': 0,
+    },
+    'LD LaserDisc': {
+        'width': 0,
+        'height': 0,
+        'depth': 0,
+        'weight': 0,
+    },
 }
 
 def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> None:
@@ -76,6 +119,10 @@ def export_to_ml_spreadsheet(spreadsheet_path: str, products: List[Product]) -> 
             'pieces': 1,
             'album-duration': product.album_duration,
             'album-duration-time-unit': 'm',
+            'width': MEASURES_BY_FORMAT[product.format]["width"],
+            'height': MEASURES_BY_FORMAT[product.format]["height"],
+            'depth': MEASURES_BY_FORMAT[product.format]["depth"],
+            'weight': MEASURES_BY_FORMAT[product.format]["weight"],
         }
 
         for field, column in columns_to_write.items():
