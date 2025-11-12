@@ -157,6 +157,8 @@ def get_product_handle(product: Product) -> str:
 def get_product_tags(product: Product) -> List[str]:
     nationality = 'nacional' if product.is_national else 'internacional'
     genres = [genre.lower() for genre in product.genres]
+    if product.format == 'Compacto Vinil':
+        genres.append('compactos')
 
     tags = []
     tags.append(TAG_RELATIONS[product.format]['all'])
