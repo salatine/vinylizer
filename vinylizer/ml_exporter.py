@@ -42,15 +42,15 @@ FIELDS_BY_CELL_VALUE = {
 
 MEASURES_BY_FORMAT = {
     'Lp Vinil': {
-        'width': 40,
-        'height': 5,
-        'depth': 40,
-        'weight': 1,
+        'width': 40.0,
+        'height': 5.0,
+        'depth': 40.0,
+        'weight': 1.0,
     },
     'Compacto Vinil': {
-        'width': 22,
-        'height': 4,
-        'depth': 22,
+        'width': 22.0,
+        'height': 4.0,
+        'depth': 22.0,
         'weight': 0.5,
     },
     # TODO: measurements for these others formats
