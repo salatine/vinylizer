@@ -66,7 +66,7 @@ MEASURES_BY_FORMAT = {
         'depth': 0,
         'weight': 0,
     },
-    'Fita K0 Cassete': {
+    'Fita K7 Cassete': {
         'width': 0,
         'height': 0,
         'depth': 0,
