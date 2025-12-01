@@ -53,13 +53,13 @@ MEASURES_BY_FORMAT = {
         'depth': 22.0,
         'weight': 0.5,
     },
-    # TODO: measurements for these others formats
     'CD': {
-        'width': 0,
-        'height': 0,
-        'depth': 0,
-        'weight': 0,
+        'width': 16.0,
+        'height': 2.0,
+        'depth': 14.0,
+        'weight': 0.5,
     },
+    # TODO: measurements for these others formats
     'DVD': {
         'width': 0,
         'height': 0,
