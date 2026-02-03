@@ -59,6 +59,12 @@ MEASURES_BY_FORMAT = {
         'depth': 14.0,
         'weight': 0.5,
     },
+    'LD LaserDisc': {
+        'width': 40.0,
+        'height': 5.0,
+        'depth': 40.0,
+        'weight': 1.0,
+    },
     # TODO: measurements for these others formats
     'DVD': {
         'width': 0,
@@ -67,12 +73,6 @@ MEASURES_BY_FORMAT = {
         'weight': 0,
     },
     'Fita K7 Cassete': {
-        'width': 0,
-        'height': 0,
-        'depth': 0,
-        'weight': 0,
-    },
-    'LD LaserDisc': {
         'width': 0,
         'height': 0,
         'depth': 0,
